@@ -1,5 +1,9 @@
 # Unity Native Camera Plugin
 
+**Available on Asset Store:** https://www.assetstore.unity3d.com/en/#!/content/117802
+
+**Forum Thread:** https://forum.unity.com/threads/native-camera-for-android-ios-open-source.529560/
+
 This plugin helps you take pictures/record videos natively with your device's camera on Android and iOS. It has built-in support for runtime permissions, as well.
 
 After importing **NativeCamera.unitypackage** to your project, only a few steps are required to set up the plugin:
