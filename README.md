@@ -34,7 +34,7 @@ There are two ways to set up the plugin on iOS:
 
 #### a. Automated Setup for iOS
 
-- (optional) change the value of **CAMERA_USAGE_DESCRIPTION** in *Plugins/NativeCamera/Editor/NCPostProcessBuild.cs*
+- (optional) change the values of **CAMERA_USAGE_DESCRIPTION** and **MICROPHONE_USAGE_DESCRIPTION** in *Plugins/NativeCamera/Editor/NCPostProcessBuild.cs*
 
 #### b. Manual Setup for iOS
 
@@ -44,6 +44,7 @@ There are two ways to set up the plugin on iOS:
 
 ![CameraUsageDescription](screenshots/1.png)
 
+- also enter a **Microphone Usage Description** (see: https://github.com/yasirkula/UnityNativeCamera/issues/2)
 - insert `-framework MobileCoreServices -framework ImageIO` to the **Other Linker Flags** of *Unity-iPhone Target*:
 
 ![OtherLinkerFlags](screenshots/2.png)
