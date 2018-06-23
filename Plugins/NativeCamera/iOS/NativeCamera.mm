@@ -19,6 +19,7 @@ extern UIViewController* UnityGetGLViewController();
 + (void)openCamera:(BOOL)imageMode savePath:(NSString *)imageSavePath maxImageSize:(int)maxImageSize videoQuality:(int)videoQuality maxVideoDuration:(int)maxVideoDuration;
 + (int)isCameraBusy;
 + (char *)getImageProperties:(NSString *)path;
++ (char *)getVideoProperties:(NSString *)path;
 + (char *)loadImageAtPath:(NSString *)path tempFilePath:(NSString *)tempFilePath maximumSize:(int)maximumSize;
 @end
 
@@ -229,6 +230,27 @@ static int imagePickerState = 0; // 0 -> none, 1 -> showing, 2 -> finished
 	return [self getCString:[NSString stringWithFormat:@"%d>%d> >%d", [metadata[0] intValue], [metadata[1] intValue], orientationUnity]];
 }
 
++ (char *)getVideoProperties:(NSString *)path {
+	CGSize size = CGSizeZero;
+	float rotation = 0;
+	long long duration = 0;
+	
+	AVURLAsset *asset = [AVURLAsset URLAssetWithURL:[NSURL fileURLWithPath:path] options:nil];
+	if (asset != nil) {
+		duration = (long long) round(CMTimeGetSeconds([asset duration]) * 1000);
+		CGAffineTransform transform = [asset preferredTransform];
+		NSArray<AVAssetTrack *>* videoTracks = [asset tracksWithMediaType:AVMediaTypeVideo];
+		if (videoTracks != nil && [videoTracks count] > 0) {
+			size = [[videoTracks objectAtIndex:0] naturalSize];
+			transform = [[videoTracks objectAtIndex:0] preferredTransform];
+		}
+		
+		rotation = atan2(transform.b, transform.a) * (180.0 / M_PI);
+	}
+	
+	return [self getCString:[NSString stringWithFormat:@"%d>%d>%lld>%f", (int)roundf(size.width), (int)roundf(size.height), duration, rotation]];
+}
+
 + (UIImage *)scaleImage:(UIImage *)image maxSize:(int)maxSize {
 	CGFloat width = image.size.width;
 	CGFloat height = image.size.height;
@@ -363,6 +385,10 @@ extern "C" int _NativeCamera_IsCameraBusy() {
 
 extern "C" char* _NativeCamera_GetImageProperties(const char* path) {
 	return [UNativeCamera getImageProperties:[NSString stringWithUTF8String:path]];
+}
+
+extern "C" char* _NativeCamera_GetVideoProperties(const char* path) {
+	return [UNativeCamera getVideoProperties:[NSString stringWithUTF8String:path]];
 }
 
 extern "C" char* _NativeCamera_LoadImageAtPath(const char* path, const char* temporaryFilePath, int maxSize) {

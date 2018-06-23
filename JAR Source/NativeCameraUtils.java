@@ -1,5 +1,6 @@
 package com.yasirkula.unity;
 
+import android.annotation.TargetApi;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -10,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -544,5 +546,30 @@ public class NativeCameraUtils
 		}
 
 		return width + ">" + height + ">" + mimeType + ">" + orientationUnity;
+	}
+
+	@TargetApi( Build.VERSION_CODES.JELLY_BEAN_MR1 )
+	public static String GetVideoProperties( Context context, final String path )
+	{
+		MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
+		metadataRetriever.setDataSource( path );
+
+		String width = metadataRetriever.extractMetadata( MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH );
+		String height = metadataRetriever.extractMetadata( MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT );
+		String duration = metadataRetriever.extractMetadata( MediaMetadataRetriever.METADATA_KEY_DURATION );
+		String rotation = "0";
+		if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 )
+			rotation = metadataRetriever.extractMetadata( MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION );
+
+		if( width == null )
+			width = "0";
+		if( height == null )
+			height = "0";
+		if( duration == null )
+			duration = "0";
+		if( rotation == null )
+			rotation = "0";
+
+		return width + ">" + height + ">" + duration + ">" + rotation;
 	}
 }

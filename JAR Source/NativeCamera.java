@@ -113,6 +113,11 @@ public class NativeCamera
 		return NativeCameraUtils.GetImageProperties( context, path );
 	}
 
+	public static String GetVideoProperties( Context context, final String path )
+	{
+		return NativeCameraUtils.GetVideoProperties( context, path );
+	}
+
 	private static boolean CanAccessCamera( Context context, NativeCameraMediaReceiver mediaReceiver )
 	{
 		if( !HasCamera( context ) )
