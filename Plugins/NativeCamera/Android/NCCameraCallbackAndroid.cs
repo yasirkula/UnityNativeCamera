@@ -1,27 +1,39 @@
 ﻿#if !UNITY_EDITOR && UNITY_ANDROID
-using System.Threading;
+using System.Collections;
 using UnityEngine;
 
 namespace NativeCameraNamespace
 {
 	public class NCCameraCallbackAndroid : AndroidJavaProxy
 	{
-		private object threadLock;
-		public string Path { get; private set; }
+		private NativeCamera.CameraCallback callback;
 
-		public NCCameraCallbackAndroid( object threadLock ) : base( "com.yasirkula.unity.NativeCameraMediaReceiver" )
+		public NCCameraCallbackAndroid( NativeCamera.CameraCallback callback ) : base( "com.yasirkula.unity.NativeCameraMediaReceiver" )
 		{
-			Path = string.Empty;
-			this.threadLock = threadLock;
+			this.callback = callback;
 		}
 
 		public void OnMediaReceived( string path )
 		{
-			Path = path;
+			NCCallbackHelper coroutineHolder = new GameObject( "NCCallbackHelper" ).AddComponent<NCCallbackHelper>();
+			coroutineHolder.StartCoroutine( MediaReceiveCoroutine( coroutineHolder.gameObject, path ) );
+		}
 
-			lock( threadLock )
+		private IEnumerator MediaReceiveCoroutine( GameObject obj, string path )
+		{
+			yield return null;
+
+			if( string.IsNullOrEmpty( path ) )
+				path = null;
+
+			try
 			{
-				Monitor.Pulse( threadLock );
+				if( callback != null )
+					callback( path );
+			}
+			finally
+			{
+				Object.Destroy( obj );
 			}
 		}
 	}

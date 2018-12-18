@@ -215,23 +215,7 @@ public static class NativeCamera
 		if( result == Permission.Granted && !IsCameraBusy() )
 		{
 #if !UNITY_EDITOR && UNITY_ANDROID
-			object threadLock = new object();
-			lock( threadLock )
-			{
-				NCCameraCallbackAndroid nativeCallback = new NCCameraCallbackAndroid( threadLock );
-
-				AJC.CallStatic( "TakePicture", Context, nativeCallback );
-
-				if( string.IsNullOrEmpty( nativeCallback.Path ) )
-					System.Threading.Monitor.Wait( threadLock );
-
-				string path = nativeCallback.Path;
-				if( string.IsNullOrEmpty( path ) )
-					path = null;
-
-				if( callback != null )
-					callback( path );
-			}
+			AJC.CallStatic( "TakePicture", Context, new NCCameraCallbackAndroid( callback ) );
 #elif !UNITY_EDITOR && UNITY_IOS
 			if( maxSize <= 0 )
 				maxSize = SystemInfo.maxTextureSize;
@@ -253,23 +237,7 @@ public static class NativeCamera
 		if( result == Permission.Granted && !IsCameraBusy() )
 		{
 #if !UNITY_EDITOR && UNITY_ANDROID
-			object threadLock = new object();
-			lock( threadLock )
-			{
-				NCCameraCallbackAndroid nativeCallback = new NCCameraCallbackAndroid( threadLock );
-
-				AJC.CallStatic( "RecordVideo", Context, nativeCallback, (int) quality, maxDuration, maxSizeBytes );
-
-				if( string.IsNullOrEmpty( nativeCallback.Path ) )
-					System.Threading.Monitor.Wait( threadLock );
-
-				string path = nativeCallback.Path;
-				if( string.IsNullOrEmpty( path ) )
-					path = null;
-
-				if( callback != null )
-					callback( path );
-			}
+			AJC.CallStatic( "RecordVideo", Context, new NCCameraCallbackAndroid( callback ), (int) quality, maxDuration, maxSizeBytes );
 #elif !UNITY_EDITOR && UNITY_IOS
 			NCCameraCallbackiOS.Initialize( callback );
 			_NativeCamera_RecordVideo( (int) quality, maxDuration );
