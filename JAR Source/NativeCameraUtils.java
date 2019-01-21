@@ -49,7 +49,8 @@ public class NativeCameraUtils
 				{
 					for( ProviderInfo provider : providers )
 					{
-						if( provider.name.equals( NativeCameraContentProvider.class.getName() ) && provider.packageName.equals( context.getPackageName() )
+						if( provider.name != null && provider.packageName != null && provider.authority != null &&
+								provider.name.equals( NativeCameraContentProvider.class.getName() ) && provider.packageName.equals( context.getPackageName() )
 								&& provider.authority.length() > 0 )
 						{
 							authority = provider.authority;

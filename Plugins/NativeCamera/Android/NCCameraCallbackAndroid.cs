@@ -1,28 +1,26 @@
 ﻿#if !UNITY_EDITOR && UNITY_ANDROID
-using System.Collections;
 using UnityEngine;
 
 namespace NativeCameraNamespace
 {
 	public class NCCameraCallbackAndroid : AndroidJavaProxy
 	{
-		private NativeCamera.CameraCallback callback;
+		private readonly NativeCamera.CameraCallback callback;
+		private readonly NCCallbackHelper callbackHelper;
 
 		public NCCameraCallbackAndroid( NativeCamera.CameraCallback callback ) : base( "com.yasirkula.unity.NativeCameraMediaReceiver" )
 		{
 			this.callback = callback;
+			callbackHelper = new GameObject( "NCCallbackHelper" ).AddComponent<NCCallbackHelper>();
 		}
 
 		public void OnMediaReceived( string path )
 		{
-			NCCallbackHelper coroutineHolder = new GameObject( "NCCallbackHelper" ).AddComponent<NCCallbackHelper>();
-			coroutineHolder.StartCoroutine( MediaReceiveCoroutine( coroutineHolder.gameObject, path ) );
+			callbackHelper.CallOnMainThread( () => MediaReceiveCallback( path ) );
 		}
 
-		private IEnumerator MediaReceiveCoroutine( GameObject obj, string path )
+		private void MediaReceiveCallback( string path )
 		{
-			yield return null;
-
 			if( string.IsNullOrEmpty( path ) )
 				path = null;
 
@@ -33,7 +31,7 @@ namespace NativeCameraNamespace
 			}
 			finally
 			{
-				Object.Destroy( obj );
+				Object.Destroy( callbackHelper );
 			}
 		}
 	}
