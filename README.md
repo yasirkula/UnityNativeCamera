@@ -24,9 +24,11 @@ After importing **NativeCamera.unitypackage** to your project, only a few steps 
 
 Here, you should change **MY_UNIQUE_AUTHORITY** with a **unique string**. That is important because two apps with the same **android:authorities** string in their `<provider>` tag can't be installed on the same device. Just make it something unique, like your bundle identifier, if you like.
 
-To verify this step, you can check the contents of *Temp/StagingArea/AndroidManifest.xml* to see if the *<provider ... />* is still there **after** building your project to Android. 
+To verify this step, you can check the contents of *Temp/StagingArea/AndroidManifest.xml* to see if the *<provider ... />* is still there **after** building your project to Android.
 
 - (optional) inside the `<manifest>...</manifest>` tag of your AndroidManifest, insert `<uses-feature android:name="android.hardware.camera" android:required="false" />` to declare that your app benefits from camera (if your app requires a camera/can't run without one, then change the value of *android:required* to *true*)
+
+**NOTE:** if you are also using the [NativeShare](https://github.com/yasirkula/UnityNativeShare/) plugin, make sure that each plugin's provider has a different **android:authorities** string.  
 
 ### iOS Setup
 
@@ -96,6 +98,20 @@ Beginning with *6.0 Marshmallow*, Android apps must request runtime permissions 
 - **markTextureNonReadable** marks the generated texture as non-readable for better memory usage. If you plan to modify the texture later (e.g. *GetPixels*/*SetPixels*), set its value to *false*
 - **generateMipmaps** determines whether texture should have mipmaps or not
 - **linearColorSpace** determines whether texture should be in linear color space or sRGB color space
+
+## FAQ
+
+- **Can't use the camera, it says "Can't find ContentProvider, camera is inaccessible!" in Logcat**
+
+Make sure that you've added the provider to the **AndroidManifest.xml** located exactly at **Assets/Plugins/Android** and verify that it is inserted in-between the `<application>...</application>` tags.
+
+- **Can't use the camera, it says "java.lang.ClassNotFoundException: com.yasirkula.unity.NativeCamera" in Logcat**
+
+If your project uses ProGuard, try adding the following line to ProGuard filters: `-keep class com.yasirkula.unity.* { *; }`
+
+- **My app crashes at startup after importing NativeCamera to my project**
+
+Make sure that you didn't touch the provider's **android:name** value, it **must** stay as is. You only need to change the **android:authorities** string.
 
 ## Example Code
 
