@@ -1,7 +1,8 @@
-﻿#if UNITY_IOS
+﻿using System.IO;
 using UnityEditor;
+using UnityEngine;
+#if UNITY_IOS
 using UnityEditor.Callbacks;
-using System.IO;
 using UnityEditor.iOS.Xcode;
 #endif
 
@@ -11,6 +12,17 @@ public class NCPostProcessBuild
 
 	private const string CAMERA_USAGE_DESCRIPTION = "Capture media with camera";
 	private const string MICROPHONE_USAGE_DESCRIPTION = "Capture microphone input in videos";
+
+	[InitializeOnLoadMethod]
+	public static void ValidatePlugin()
+	{
+		string jarPath = "Assets/Plugins/NativeCamera/Android/NativeCamera.jar";
+		if( File.Exists( jarPath ) )
+		{
+			Debug.Log( "Deleting obsolete " + jarPath );
+			AssetDatabase.DeleteAsset( jarPath );
+		}
+	}
 
 #if UNITY_IOS
 #pragma warning disable 0162

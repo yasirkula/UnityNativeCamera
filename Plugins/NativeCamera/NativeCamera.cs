@@ -42,6 +42,7 @@ public static class NativeCamera
 
 	public enum Permission { Denied = 0, Granted = 1, ShouldAsk = 2 };
 	public enum Quality { Default = -1, Low = 0, Medium = 1, High = 2 };
+	public enum PreferredCamera { Default = -1, Rear = 0, Front = 1 }
 
 	// EXIF orientation: http://sylvana.net/jpegcrop/exif_orientation.html (indices are reordered)
 	public enum ImageOrientation { Unknown = -1, Normal = 0, Rotate90 = 1, Rotate180 = 2, Rotate270 = 3, FlipHorizontal = 4, Transpose = 5, FlipVertical = 6, Transverse = 7 };
@@ -95,10 +96,10 @@ public static class NativeCamera
 	private static extern int _NativeCamera_HasCamera();
 	
 	[System.Runtime.InteropServices.DllImport( "__Internal" )]
-	private static extern void _NativeCamera_TakePicture( string imageSavePath, int maxSize );
+	private static extern void _NativeCamera_TakePicture( string imageSavePath, int maxSize, int preferredCamera );
 
 	[System.Runtime.InteropServices.DllImport( "__Internal" )]
-	private static extern void _NativeCamera_RecordVideo( int quality, int maxDuration );
+	private static extern void _NativeCamera_RecordVideo( int quality, int maxDuration, int preferredCamera );
 
 	[System.Runtime.InteropServices.DllImport( "__Internal" )]
 	private static extern string _NativeCamera_GetImageProperties( string path );
@@ -209,19 +210,19 @@ public static class NativeCamera
 	#endregion
 
 	#region Camera Functions
-	public static Permission TakePicture( CameraCallback callback, int maxSize = -1 )
+	public static Permission TakePicture( CameraCallback callback, int maxSize = -1, PreferredCamera preferredCamera = PreferredCamera.Default )
 	{
 		Permission result = RequestPermission();
 		if( result == Permission.Granted && !IsCameraBusy() )
 		{
 #if !UNITY_EDITOR && UNITY_ANDROID
-			AJC.CallStatic( "TakePicture", Context, new NCCameraCallbackAndroid( callback ) );
+			AJC.CallStatic( "TakePicture", Context, new NCCameraCallbackAndroid( callback ), (int) preferredCamera );
 #elif !UNITY_EDITOR && UNITY_IOS
 			if( maxSize <= 0 )
 				maxSize = SystemInfo.maxTextureSize;
 
 			NCCameraCallbackiOS.Initialize( callback );
-			_NativeCamera_TakePicture( IOSSelectedImagePath, maxSize );
+			_NativeCamera_TakePicture( IOSSelectedImagePath, maxSize, (int) preferredCamera );
 #else
 			if( callback != null )
 				callback( null );
@@ -231,16 +232,16 @@ public static class NativeCamera
 		return result;
 	}
 
-	public static Permission RecordVideo( CameraCallback callback, Quality quality = Quality.Default, int maxDuration = 0, long maxSizeBytes = 0L )
+	public static Permission RecordVideo( CameraCallback callback, Quality quality = Quality.Default, int maxDuration = 0, long maxSizeBytes = 0L, PreferredCamera preferredCamera = PreferredCamera.Default )
 	{
 		Permission result = RequestPermission();
 		if( result == Permission.Granted && !IsCameraBusy() )
 		{
 #if !UNITY_EDITOR && UNITY_ANDROID
-			AJC.CallStatic( "RecordVideo", Context, new NCCameraCallbackAndroid( callback ), (int) quality, maxDuration, maxSizeBytes );
+			AJC.CallStatic( "RecordVideo", Context, new NCCameraCallbackAndroid( callback ), (int) preferredCamera, (int) quality, maxDuration, maxSizeBytes );
 #elif !UNITY_EDITOR && UNITY_IOS
 			NCCameraCallbackiOS.Initialize( callback );
-			_NativeCamera_RecordVideo( (int) quality, maxDuration );
+			_NativeCamera_RecordVideo( (int) quality, maxDuration, (int) preferredCamera );
 #else
 			if( callback != null )
 				callback( null );

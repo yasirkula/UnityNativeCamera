@@ -25,13 +25,17 @@ public class NativeCameraPictureFragment extends Fragment
 	private static final int CAMERA_PICTURE_CODE = 554776;
 
 	private static final String IMAGE_NAME = "IMG_camera.jpg";
+	public static final String DEFAULT_CAMERA_ID = "UNCV_DEF_CAMERA";
 	public static final String AUTHORITY_ID = "UNCP_AUTHORITY";
 
 	private final NativeCameraMediaReceiver mediaReceiver;
 	private String fileTargetPath;
 	private int lastImageId;
 
-	public NativeCameraPictureFragment() { mediaReceiver = null; }
+	public NativeCameraPictureFragment()
+	{
+		mediaReceiver = null;
+	}
 
 	public NativeCameraPictureFragment( final NativeCameraMediaReceiver mediaReceiver )
 	{
@@ -46,6 +50,7 @@ public class NativeCameraPictureFragment extends Fragment
 			getFragmentManager().beginTransaction().remove( this ).commit();
 		else
 		{
+			int defaultCamera = getArguments().getInt( DEFAULT_CAMERA_ID );
 			String authority = getArguments().getString( AUTHORITY_ID );
 
 			File photoFile = new File( getActivity().getCacheDir(), IMAGE_NAME );
@@ -87,6 +92,11 @@ public class NativeCameraPictureFragment extends Fragment
 
 			Intent intent = new Intent( MediaStore.ACTION_IMAGE_CAPTURE );
 			SetOutputUri( intent, authority, photoFile );
+
+			if( defaultCamera == 0 )
+				NativeCameraUtils.SetDefaultCamera( intent, true );
+			else if( defaultCamera == 1 )
+				NativeCameraUtils.SetDefaultCamera( intent, false );
 
 			if( getActivity().getPackageManager().queryIntentActivities( intent, PackageManager.MATCH_DEFAULT_ONLY ).size() > 0 )
 				startActivityForResult( intent, CAMERA_PICTURE_CODE );

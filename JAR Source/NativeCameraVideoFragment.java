@@ -21,6 +21,7 @@ public class NativeCameraVideoFragment extends Fragment
 	private static final int CAMERA_VIDEO_CODE = 554777;
 
 	private static final String VIDEO_NAME = "VID_camera";
+	public static final String DEFAULT_CAMERA_ID = "UNCV_DEF_CAMERA";
 	public static final String QUALITY_ID = "UNCV_QUALITY";
 	public static final String MAX_DURATION_ID = "UNCV_DURATION";
 	public static final String MAX_SIZE_ID = "UNCV_SIZE";
@@ -28,7 +29,10 @@ public class NativeCameraVideoFragment extends Fragment
 	private final NativeCameraMediaReceiver mediaReceiver;
 	private int lastVideoId;
 
-	public NativeCameraVideoFragment() { mediaReceiver = null; }
+	public NativeCameraVideoFragment()
+	{
+		mediaReceiver = null;
+	}
 
 	public NativeCameraVideoFragment( final NativeCameraMediaReceiver mediaReceiver )
 	{
@@ -43,6 +47,7 @@ public class NativeCameraVideoFragment extends Fragment
 			getFragmentManager().beginTransaction().remove( this ).commit();
 		else
 		{
+			int defaultCamera = getArguments().getInt( DEFAULT_CAMERA_ID );
 			int quality = getArguments().getInt( QUALITY_ID );
 			int maxDuration = getArguments().getInt( MAX_DURATION_ID );
 			long maxSize = getArguments().getLong( MAX_SIZE_ID );
@@ -72,6 +77,11 @@ public class NativeCameraVideoFragment extends Fragment
 				intent.putExtra( MediaStore.EXTRA_DURATION_LIMIT, maxDuration );
 			if( maxSize > 0L )
 				intent.putExtra( MediaStore.EXTRA_SIZE_LIMIT, maxSize );
+
+			if( defaultCamera == 0 )
+				NativeCameraUtils.SetDefaultCamera( intent, true );
+			else if( defaultCamera == 1 )
+				NativeCameraUtils.SetDefaultCamera( intent, false );
 
 			if( getActivity().getPackageManager().queryIntentActivities( intent, PackageManager.MATCH_DEFAULT_ONLY ).size() > 0 )
 				startActivityForResult( intent, CAMERA_VIDEO_CODE );

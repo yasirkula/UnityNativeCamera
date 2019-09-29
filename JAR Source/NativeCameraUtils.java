@@ -3,6 +3,7 @@ package com.yasirkula.unity;
 import android.annotation.TargetApi;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
@@ -66,6 +67,23 @@ public class NativeCameraUtils
 		}
 
 		return authority;
+	}
+
+	// Credit: https://github.com/jamesmontemagno/MediaPlugin/issues/307#issuecomment-356199135
+	public static void SetDefaultCamera( Intent intent, boolean useRearCamera )
+	{
+		if( useRearCamera )
+		{
+			intent.putExtra( "android.intent.extras.LENS_FACING_BACK", 1 );
+			intent.putExtra( "android.intent.extras.CAMERA_FACING", 0 );
+			intent.putExtra( "android.intent.extra.USE_FRONT_CAMERA", false );
+		}
+		else
+		{
+			intent.putExtra( "android.intent.extras.LENS_FACING_FRONT", 1 );
+			intent.putExtra( "android.intent.extras.CAMERA_FACING", 1 );
+			intent.putExtra( "android.intent.extra.USE_FRONT_CAMERA", true );
+		}
 	}
 
 	// Credit: https://stackoverflow.com/a/9293885/2373034

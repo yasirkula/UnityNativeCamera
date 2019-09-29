@@ -16,7 +16,7 @@ extern UIViewController* UnityGetGLViewController();
 + (int)canOpenSettings;
 + (void)openSettings;
 + (int)hasCamera;
-+ (void)openCamera:(BOOL)imageMode savePath:(NSString *)imageSavePath maxImageSize:(int)maxImageSize videoQuality:(int)videoQuality maxVideoDuration:(int)maxVideoDuration;
++ (void)openCamera:(BOOL)imageMode defaultCamera:(int)defaultCamera savePath:(NSString *)imageSavePath maxImageSize:(int)maxImageSize videoQuality:(int)videoQuality maxVideoDuration:(int)maxVideoDuration;
 + (int)isCameraBusy;
 + (char *)getImageProperties:(NSString *)path;
 + (char *)getVideoProperties:(NSString *)path;
@@ -98,7 +98,7 @@ static int imagePickerState = 0; // 0 -> none, 1 -> showing, 2 -> finished
 }
 
 // Credit: https://stackoverflow.com/a/10531752/2373034
-+ (void)openCamera:(BOOL)imageMode savePath:(NSString *)imageSavePath maxImageSize:(int)maxImageSize videoQuality:(int)videoQuality maxVideoDuration:(int)maxVideoDuration {
++ (void)openCamera:(BOOL)imageMode defaultCamera:(int)defaultCamera savePath:(NSString *)imageSavePath maxImageSize:(int)maxImageSize videoQuality:(int)videoQuality maxVideoDuration:(int)maxVideoDuration {
 	if (![UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
 	{
 		NSLog(@"Device has no registered cameras!");
@@ -137,6 +137,11 @@ static int imagePickerState = 0; // 0 -> none, 1 -> showing, 2 -> finished
 		else if (videoQuality == 2)
 			imagePicker.videoQuality = UIImagePickerControllerQualityTypeHigh;
 	}
+	
+	if (defaultCamera == 0 && [UIImagePickerController isCameraDeviceAvailable:UIImagePickerControllerCameraDeviceRear])
+		imagePicker.cameraDevice = UIImagePickerControllerCameraDeviceRear;
+	else if (defaultCamera == 1 && [UIImagePickerController isCameraDeviceAvailable:UIImagePickerControllerCameraDeviceFront])
+		imagePicker.cameraDevice = UIImagePickerControllerCameraDeviceFront;
 	
 	pickedMediaSavePath = imageSavePath;
 	cameraMaxImageSize = maxImageSize;
@@ -371,12 +376,12 @@ extern "C" int _NativeCamera_HasCamera() {
 	return [UNativeCamera hasCamera];
 }
 
-extern "C" void _NativeCamera_TakePicture(const char* imageSavePath, int maxSize) {
-	[UNativeCamera openCamera:YES savePath:[NSString stringWithUTF8String:imageSavePath] maxImageSize:maxSize videoQuality:-1 maxVideoDuration:-1];
+extern "C" void _NativeCamera_TakePicture(const char* imageSavePath, int maxSize, int preferredCamera) {
+	[UNativeCamera openCamera:YES defaultCamera:preferredCamera savePath:[NSString stringWithUTF8String:imageSavePath] maxImageSize:maxSize videoQuality:-1 maxVideoDuration:-1];
 }
 
-extern "C" void _NativeCamera_RecordVideo(int quality, int maxDuration) {
-	[UNativeCamera openCamera:NO savePath:nil maxImageSize:4096 videoQuality:quality maxVideoDuration:maxDuration];
+extern "C" void _NativeCamera_RecordVideo(int quality, int maxDuration, int preferredCamera) {
+	[UNativeCamera openCamera:NO defaultCamera:preferredCamera savePath:nil maxImageSize:4096 videoQuality:quality maxVideoDuration:maxDuration];
 }
 
 extern "C" int _NativeCamera_IsCameraBusy() {

@@ -7,23 +7,9 @@ E-mail: yasirkula@gmail.com
 This plugin helps you take pictures/record videos natively with your device's camera on Android & iOS.
 
 2. HOW TO
-2.1. Android Setup
-- set "Write Permission" to "External (SDCard)" in Player Settings
-- NativeCamera requires a small modification in AndroidManifest. If your project does not have an AndroidManifest.xml file located at Assets/Plugins/Android, you should copy Unity's default AndroidManifest.xml from C:\Program Files\Unity\Editor\Data\PlaybackEngines\AndroidPlayer (it might be located in a subfolder, like 'Apk') to Assets/Plugins/Android. Inside the <application>...</application> tag of your AndroidManifest, insert the following code snippet:
+NativeCamera no longer requires any manual setup on Android. If you were using an older version of the plugin, you need to remove NativeCamera's "<provider ... />" from your AndroidManifest.xml.
 
-<provider
-  android:name="com.yasirkula.unity.NativeCameraContentProvider"
-  android:authorities="MY_UNIQUE_AUTHORITY"
-  android:exported="false"
-  android:grantUriPermissions="true" />
-
-Here, you should change MY_UNIQUE_AUTHORITY with a unique string. That is important because two apps with the same android:authorities string in their <provider> tag can't be installed on the same device. Just make it something unique, like your bundle identifier, if you like.
-
-To verify this step, you can check the contents of Temp/StagingArea/AndroidManifest.xml to see if the <provider ... /> is still there after building your project to Android.
-
-NOTE: if you are also using the NativeShare plugin, make sure that each plugin's provider has a different android:authorities string.
-
-- (optional) inside the <manifest>...</manifest> tag of your AndroidManifest, insert <uses-feature android:name="android.hardware.camera" android:required="false" /> to declare that your app benefits from camera (if your app requires a camera/can't run without one, then change the value of android:required to true)
+For reference, the legacy documentation is available at: https://github.com/yasirkula/UnityNativeCamera/wiki/Manual-Setup-for-Android
 
 2.2. iOS Setup
 There are two ways to set up the plugin on iOS:
@@ -39,13 +25,10 @@ There are two ways to set up the plugin on iOS:
 
 3. FAQ
 - Can't use the camera, it says "Can't find ContentProvider, camera is inaccessible!" in Logcat
-Make sure that you've added the provider to the AndroidManifest.xml located exactly at Assets/Plugins/Android and verify that it is inserted in-between the <application>...</application> tags.
+After building your project, verify that NativeCamera's "<provider ... />" tag is inserted in-between the "<application>...</application>" tags of PROJECT_PATH/Temp/StagingArea/AndroidManifest.xml. If not, please contact me.
 
 - Can't use the camera, it says "java.lang.ClassNotFoundException: com.yasirkula.unity.NativeCamera" in Logcat
 If your project uses ProGuard, try adding the following line to ProGuard filters: -keep class com.yasirkula.unity.* { *; }
-
-- My app crashes at startup after importing NativeCamera to my project
-Make sure that you didn't touch the provider's android:name value, it must stay as is. You only need to change the android:authorities string.
 
 4. SCRIPTING API
 Please see the online documentation for a more in-depth documentation of the Scripting API: https://github.com/yasirkula/UnityNativeCamera
@@ -61,12 +44,13 @@ delegate void CameraCallback( string path );
 // This operation is asynchronous! After user takes a picture or cancels the operation, the callback is called (on main thread)
 // CameraCallback takes a string parameter which stores the path of the captured image, or null if the operation is canceled
 // maxSize: determines the maximum size of the returned image in pixels on iOS. A larger image will be down-scaled for better performance. If untouched, its value will be set to SystemInfo.maxTextureSize. Has no effect on Android
-NativeCamera.Permission NativeCamera.TakePicture( CameraCallback callback, int maxSize = -1 );
+// preferredCamera: determines whether the rear camera or the front camera should be opened by default
+NativeCamera.Permission NativeCamera.TakePicture( CameraCallback callback, int maxSize = -1, PreferredCamera preferredCamera = PreferredCamera.Default );
 
 // quality: determines the quality of the recorded video
 // maxDuration: determines the maximum duration, in seconds, for the recorded video. If untouched, there will be no limit. Please note that the functionality of this parameter depends on whether the device vendor has added this capability to the camera or not. So, this parameter may not have any effect on some devices
 // maxSizeBytes: determines the maximum size, in bytes, for the recorded video. If untouched, there will be no limit. This parameter has no effect on iOS. Please note that the functionality of this parameter depends on whether the device vendor has added this capability to the camera or not. So, this parameter may not have any effect on some devices
-NativeCamera.Permission NativeCamera.RecordVideo( CameraCallback callback, Quality quality = Quality.Default, int maxDuration = 0, long maxSizeBytes = 0L );
+NativeCamera.Permission NativeCamera.RecordVideo( CameraCallback callback, Quality quality = Quality.Default, int maxDuration = 0, long maxSizeBytes = 0L, PreferredCamera preferredCamera = PreferredCamera.Default );
 
 bool NativeCamera.DeviceHasCamera(); // returns false if the device doesn't have a camera. In this case, TakePicture and RecordVideo functions will not execute
 

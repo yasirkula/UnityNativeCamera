@@ -27,12 +27,13 @@ public class NativeCamera
 		return pm.hasSystemFeature( PackageManager.FEATURE_CAMERA ) || pm.hasSystemFeature( PackageManager.FEATURE_CAMERA_FRONT );
 	}
 
-	public static void TakePicture( Context context, NativeCameraMediaReceiver mediaReceiver )
+	public static void TakePicture( Context context, NativeCameraMediaReceiver mediaReceiver, int defaultCamera )
 	{
 		if( !CanAccessCamera( context, mediaReceiver ) )
 			return;
 
 		Bundle bundle = new Bundle();
+		bundle.putInt( NativeCameraPictureFragment.DEFAULT_CAMERA_ID, defaultCamera );
 		bundle.putString( NativeCameraPictureFragment.AUTHORITY_ID, NativeCameraUtils.GetAuthority( context ) );
 
 		final Fragment request = new NativeCameraPictureFragment( mediaReceiver );
@@ -41,12 +42,13 @@ public class NativeCamera
 		( (Activity) context ).getFragmentManager().beginTransaction().add( 0, request ).commit();
 	}
 
-	public static void RecordVideo( Context context, NativeCameraMediaReceiver mediaReceiver, int quality, int maxDuration, long maxSize )
+	public static void RecordVideo( Context context, NativeCameraMediaReceiver mediaReceiver, int defaultCamera, int quality, int maxDuration, long maxSize )
 	{
 		if( !CanAccessCamera( context, mediaReceiver ) )
 			return;
 
 		Bundle bundle = new Bundle();
+		bundle.putInt( NativeCameraVideoFragment.DEFAULT_CAMERA_ID, defaultCamera );
 		bundle.putInt( NativeCameraVideoFragment.QUALITY_ID, quality );
 		bundle.putInt( NativeCameraVideoFragment.MAX_DURATION_ID, maxDuration );
 		bundle.putLong( NativeCameraVideoFragment.MAX_SIZE_ID, maxSize );
