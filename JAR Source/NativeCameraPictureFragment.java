@@ -1,16 +1,12 @@
 package com.yasirkula.unity;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 
@@ -25,7 +21,7 @@ public class NativeCameraPictureFragment extends Fragment
 	private static final int CAMERA_PICTURE_CODE = 554776;
 
 	private static final String IMAGE_NAME = "IMG_camera.jpg";
-	public static final String DEFAULT_CAMERA_ID = "UNCV_DEF_CAMERA";
+	public static final String DEFAULT_CAMERA_ID = "UNCP_DEF_CAMERA";
 	public static final String AUTHORITY_ID = "UNCP_AUTHORITY";
 
 	private final NativeCameraMediaReceiver mediaReceiver;
@@ -84,6 +80,10 @@ public class NativeCameraPictureFragment extends Fragment
 				else
 					lastImageId = Integer.MAX_VALUE;
 			}
+			catch( Exception e )
+			{
+				Log.e( "Unity", "Exception:", e );
+			}
 			finally
 			{
 				if( imageCursor != null )
@@ -91,7 +91,7 @@ public class NativeCameraPictureFragment extends Fragment
 			}
 
 			Intent intent = new Intent( MediaStore.ACTION_IMAGE_CAPTURE );
-			SetOutputUri( intent, authority, photoFile );
+			NativeCameraUtils.SetOutputUri( getActivity(), intent, authority, photoFile );
 
 			if( defaultCamera == 0 )
 				NativeCameraUtils.SetDefaultCamera( intent, true );
@@ -102,25 +102,6 @@ public class NativeCameraPictureFragment extends Fragment
 				startActivityForResult( intent, CAMERA_PICTURE_CODE );
 			else
 				startActivityForResult( Intent.createChooser( intent, "" ), CAMERA_PICTURE_CODE );
-		}
-	}
-
-	@TargetApi( Build.VERSION_CODES.JELLY_BEAN )
-	private void SetOutputUri( Intent intent, String authority, File output )
-	{
-		Uri photoURI;
-		if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN )
-			photoURI = NativeCameraContentProvider.getUriForFile( getActivity(), authority, output );
-		else
-			photoURI = Uri.fromFile( output );
-
-		intent.putExtra( MediaStore.EXTRA_OUTPUT, photoURI );
-
-		// Credit: https://medium.com/@quiro91/sharing-files-through-intents-part-2-fixing-the-permissions-before-lollipop-ceb9bb0eec3a
-		if( Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN )
-		{
-			intent.setClipData( ClipData.newRawUri( "", photoURI ) );
-			intent.setFlags( Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION );
 		}
 	}
 
@@ -151,19 +132,25 @@ public class NativeCameraPictureFragment extends Fragment
 						if( path != null && path.length() > 0 )
 						{
 							boolean shouldDeleteImage = false;
+
+							String id = "" + imageCursor.getInt( imageCursor.getColumnIndex( MediaStore.Images.Media._ID ) );
 							long size = imageCursor.getLong( imageCursor.getColumnIndex( MediaStore.Images.Media.SIZE ) );
 							if( size > result.length() )
 							{
 								shouldDeleteImage = true;
 
+								Uri contentUri;
 								try
 								{
-									NativeCameraUtils.CopyFile( new File( path ), result );
+									contentUri = Uri.withAppendedPath( MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id );
 								}
 								catch( Exception e )
 								{
 									Log.e( "Unity", "Exception:", e );
+									contentUri = null;
 								}
+
+								NativeCameraUtils.CopyFile( getActivity(), new File( path ), result, contentUri );
 							}
 							else
 							{
@@ -180,14 +167,17 @@ public class NativeCameraPictureFragment extends Fragment
 
 							if( shouldDeleteImage && !NativeCamera.KeepGalleryReferences )
 							{
-								Log.d( "Unity", "Deleting gallery item: " + path );
+								Log.d( "Unity", "Trying to delete duplicate gallery item: " + path );
 
-								String id = "" + imageCursor.getInt( imageCursor.getColumnIndex( MediaStore.Images.Media._ID ) );
 								getActivity().getContentResolver().delete( MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
 										MediaStore.Images.Media._ID + "=?", new String[] { id } );
 							}
 						}
 					}
+				}
+				catch( Exception e )
+				{
+					Log.e( "Unity", "Exception:", e );
 				}
 				finally
 				{

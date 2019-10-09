@@ -49,6 +49,7 @@ public class NativeCamera
 
 		Bundle bundle = new Bundle();
 		bundle.putInt( NativeCameraVideoFragment.DEFAULT_CAMERA_ID, defaultCamera );
+		bundle.putString( NativeCameraVideoFragment.AUTHORITY_ID, NativeCameraUtils.GetAuthority( context ) );
 		bundle.putInt( NativeCameraVideoFragment.QUALITY_ID, quality );
 		bundle.putInt( NativeCameraVideoFragment.MAX_DURATION_ID, maxDuration );
 		bundle.putLong( NativeCameraVideoFragment.MAX_SIZE_ID, maxSize );

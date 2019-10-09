@@ -42,13 +42,13 @@ namespace NativeCameraNamespace
 
 					if( _NativeCamera_IsCameraBusy() == 0 )
 					{
+						IsBusy = false;
+						
 						if( callback != null )
 						{
 							callback( null );
 							callback = null;
 						}
-
-						IsBusy = false;
 					}
 				}
 			}
@@ -56,6 +56,8 @@ namespace NativeCameraNamespace
 
 		public void OnMediaReceived( string path )
 		{
+			IsBusy = false;
+
 			if( string.IsNullOrEmpty( path ) )
 				path = null;
 
@@ -64,8 +66,6 @@ namespace NativeCameraNamespace
 				callback( path );
 				callback = null;
 			}
-
-			IsBusy = false;
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package com.yasirkula.unity;
 
 import android.annotation.TargetApi;
+import android.content.ClipData;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
@@ -86,37 +87,97 @@ public class NativeCameraUtils
 		}
 	}
 
-	// Credit: https://stackoverflow.com/a/9293885/2373034
-	public static void CopyFile( File src, File dst ) throws IOException
+	@TargetApi( Build.VERSION_CODES.JELLY_BEAN )
+	public static void SetOutputUri( Context context, Intent intent, String authority, File output )
 	{
-		if( !src.exists() )
-			return;
+		Uri uri;
+		if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN )
+			uri = NativeCameraContentProvider.getUriForFile( context, authority, output );
+		else
+			uri = Uri.fromFile( output );
 
-		if( dst.exists() )
+		intent.putExtra( MediaStore.EXTRA_OUTPUT, uri );
+
+		// Credit: https://medium.com/@quiro91/sharing-files-through-intents-part-2-fixing-the-permissions-before-lollipop-ceb9bb0eec3a
+		if( Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN )
 		{
-			dst.delete();
-			dst.createNewFile();
+			intent.setClipData( ClipData.newRawUri( "", uri ) );
+			intent.setFlags( Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION );
 		}
+	}
 
-		InputStream in = new FileInputStream( src );
+	// Credit: https://stackoverflow.com/a/9293885/2373034
+	public static void CopyFile( Context context, File src, File dst, Uri rawUri )
+	{
 		try
 		{
-			OutputStream out = new FileOutputStream( dst );
+			if( !src.exists() )
+				return;
+
+			if( dst.exists() )
+			{
+				dst.delete();
+				dst.createNewFile();
+			}
+
+			InputStream in = new FileInputStream( src );
 			try
 			{
-				byte[] buf = new byte[1024];
-				int len;
-				while( ( len = in.read( buf ) ) > 0 )
-					out.write( buf, 0, len );
+				OutputStream out = new FileOutputStream( dst );
+				try
+				{
+					byte[] buf = new byte[1024];
+					int len;
+					while( ( len = in.read( buf ) ) > 0 )
+						out.write( buf, 0, len );
+				}
+				finally
+				{
+					out.close();
+				}
 			}
 			finally
 			{
-				out.close();
+				in.close();
 			}
 		}
-		finally
+		catch( Exception e )
 		{
-			in.close();
+			if( rawUri == null )
+				Log.e( "Unity", "Exception:", e );
+			else
+			{
+				// Try to save the file via contentResolver (can happen e.g. on Android 10 where raw file system access is restricted)
+				try
+				{
+					InputStream input = context.getContentResolver().openInputStream( rawUri );
+					if( input == null )
+						return;
+
+					OutputStream output = null;
+					try
+					{
+						output = new FileOutputStream( dst, false );
+
+						byte[] buf = new byte[4096];
+						int len;
+						while( ( len = input.read( buf ) ) > 0 )
+							output.write( buf, 0, len );
+					}
+					finally
+					{
+						if( output != null )
+							output.close();
+
+						input.close();
+					}
+				}
+				catch( Exception e2 )
+				{
+					Log.e( "Unity", "Exception:", e );
+					Log.e( "Unity", "Exception2:", e2 );
+				}
+			}
 		}
 	}
 

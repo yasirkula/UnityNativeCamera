@@ -40,7 +40,11 @@ public class NCPostProcessBuild
 			PBXProject pbxProject = new PBXProject();
 			pbxProject.ReadFromFile( pbxProjectPath );
 
+#if UNITY_2019_3_OR_NEWER
+			string targetGUID = pbxProject.GetUnityFrameworkTargetGuid();
+#else
 			string targetGUID = pbxProject.TargetGuidByName( PBXProject.GetUnityTargetName() );
+#endif
 
 			pbxProject.AddBuildProperty( targetGUID, "OTHER_LDFLAGS", "-framework MobileCoreServices" );
 			pbxProject.AddBuildProperty( targetGUID, "OTHER_LDFLAGS", "-framework ImageIO" );
