@@ -119,7 +119,7 @@ public static class NativeCamera
 		{
 			if( m_temporaryImagePath == null )
 			{
-				m_temporaryImagePath = Path.Combine( Application.temporaryCachePath, "__tmpImG" );
+				m_temporaryImagePath = Path.Combine( Application.temporaryCachePath, "tmpImg" );
 				Directory.CreateDirectory( Application.temporaryCachePath );
 			}
 
@@ -136,7 +136,7 @@ public static class NativeCamera
 		{
 			if( m_iOSSelectedImagePath == null )
 			{
-				m_iOSSelectedImagePath = Path.Combine( Application.temporaryCachePath, "tmp.png" );
+				m_iOSSelectedImagePath = Path.Combine( Application.temporaryCachePath, "CameraImg" );
 				Directory.CreateDirectory( Application.temporaryCachePath );
 			}
 
@@ -210,7 +210,7 @@ public static class NativeCamera
 	#endregion
 
 	#region Camera Functions
-	public static Permission TakePicture( CameraCallback callback, int maxSize = -1, PreferredCamera preferredCamera = PreferredCamera.Default )
+	public static Permission TakePicture( CameraCallback callback, int maxSize = -1, bool saveAsJPEG = true, PreferredCamera preferredCamera = PreferredCamera.Default )
 	{
 		Permission result = RequestPermission();
 		if( result == Permission.Granted && !IsCameraBusy() )
@@ -222,7 +222,7 @@ public static class NativeCamera
 				maxSize = SystemInfo.maxTextureSize;
 
 			NCCameraCallbackiOS.Initialize( callback );
-			_NativeCamera_TakePicture( IOSSelectedImagePath, maxSize, (int) preferredCamera );
+			_NativeCamera_TakePicture( IOSSelectedImagePath + ( saveAsJPEG ? ".jpeg" : ".png" ), maxSize, (int) preferredCamera );
 #else
 			if( callback != null )
 				callback( null );
@@ -373,11 +373,6 @@ public static class NativeCamera
 				int orientationInt;
 				if( int.TryParse( properties[3].Trim(), out orientationInt ) )
 					orientation = (ImageOrientation) orientationInt;
-
-#if !UNITY_EDITOR && UNITY_IOS
-				if( orientation == ImageOrientation.Unknown ) // captured media is saved in correct orientation on iOS
-					orientation = ImageOrientation.Normal;
-#endif
 			}
 		}
 

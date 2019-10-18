@@ -320,15 +320,59 @@ static int imagePickerState = 0; // 0 -> none, 1 -> showing, 2 -> finished
 }
 
 + (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
-	NSString *path;
+	NSString *path = nil;
 	if ([info[UIImagePickerControllerMediaType] isEqualToString:(NSString *)kUTTypeImage]) { // took picture
 		// Temporarily save image as PNG
 		UIImage *image = info[UIImagePickerControllerEditedImage] ?: info[UIImagePickerControllerOriginalImage];
 		if (image == nil)
 			path = nil;
 		else {
-			[UIImagePNGRepresentation([self scaleImage:image maxSize:cameraMaxImageSize]) writeToFile:pickedMediaSavePath atomically:YES];
-			path = pickedMediaSavePath;
+			NSString *extension = [pickedMediaSavePath pathExtension];
+			BOOL saveAsJPEG = [extension caseInsensitiveCompare:@"jpg"] == NSOrderedSame || [extension caseInsensitiveCompare:@"jpeg"] == NSOrderedSame;
+			
+			// Try to save the image with metadata
+			// Credit: https://stackoverflow.com/a/15858955
+			NSDictionary *metadata = [info objectForKey:UIImagePickerControllerMediaMetadata];
+			NSMutableDictionary *mutableMetadata = nil;
+			CFDictionaryRef metadataRef;
+			CFStringRef imageType;
+			
+			if (saveAsJPEG) {
+				mutableMetadata = [metadata mutableCopy];
+				[mutableMetadata setObject:@(1.0) forKey:(__bridge NSString *)kCGImageDestinationLossyCompressionQuality];
+				
+				metadataRef = (__bridge CFDictionaryRef)mutableMetadata;
+				imageType = kUTTypeJPEG;
+			}
+			else {
+				metadataRef = (__bridge CFDictionaryRef)metadata;
+				imageType = kUTTypePNG;
+			}
+			
+			CGImageDestinationRef imageDestination = CGImageDestinationCreateWithURL((__bridge CFURLRef)[NSURL fileURLWithPath:pickedMediaSavePath], imageType , 1, NULL);
+			if (imageDestination == NULL )
+				NSLog(@"Failed to create image destination");
+			else {
+				CGImageDestinationAddImage(imageDestination, image.CGImage, metadataRef);
+				if (CGImageDestinationFinalize(imageDestination))
+					path = pickedMediaSavePath;
+				else
+					NSLog(@"Failed to finalize the image");
+				
+				CFRelease(imageDestination);
+			}
+			
+			if (path == nil) {
+				NSLog(@"Attempting to save the image without metadata as fallback");
+				
+				if ((saveAsJPEG && [UIImageJPEGRepresentation([self scaleImage:image maxSize:cameraMaxImageSize], 1.0) writeToFile:pickedMediaSavePath atomically:YES]) ||
+					(!saveAsJPEG && [UIImagePNGRepresentation([self scaleImage:image maxSize:cameraMaxImageSize]) writeToFile:pickedMediaSavePath atomically:YES]) )
+					path = pickedMediaSavePath;
+				else {
+					NSLog(@"Error saving image without metadata");
+					path = nil;
+				}
+			}
 		}
 	}
 	else { // recorded video
