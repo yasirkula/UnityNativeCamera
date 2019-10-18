@@ -28,7 +28,8 @@ There are two ways to set up the plugin on iOS:
 `NativeCamera.TakePicture( CameraCallback callback, int maxSize = -1, PreferredCamera preferredCamera = PreferredCamera.Default )`: opens the camera and waits for user to take a picture.
 - This operation is **asynchronous**! After user takes a picture or cancels the operation, the **callback** is called (on main thread). **CameraCallback** takes a *string* parameter which stores the path of the captured image, or *null* if the operation is canceled
 - **maxSize** determines the maximum size of the returned image in pixels on iOS. A larger image will be down-scaled for better performance. If untouched, its value will be set to *SystemInfo.maxTextureSize*. Has no effect on Android
-- **preferredCamera:** determines whether the rear camera or the front camera should be opened by default
+- **saveAsJPEG** determines whether the image is saved as JPEG or PNG. Has no effect on Android
+- **preferredCamera** determines whether the rear camera or the front camera should be opened by default
 
 `NativeCamera.RecordVideo( CameraCallback callback, Quality quality = Quality.Default, int maxDuration = 0, long maxSizeBytes = 0L, PreferredCamera preferredCamera = PreferredCamera.Default )`: opens the camera and waits for user to record a video.
 - **quality** determines the quality of the recorded video. Available values are: *Default*, *Low*, *Medium*, *High*
