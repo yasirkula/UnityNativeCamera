@@ -331,8 +331,9 @@ static int imagePickerState = 0; // 0 -> none, 1 -> showing, 2 -> finished
 			BOOL saveAsJPEG = [extension caseInsensitiveCompare:@"jpg"] == NSOrderedSame || [extension caseInsensitiveCompare:@"jpeg"] == NSOrderedSame;
 			
 			// Try to save the image with metadata
+			// CANCELED: a number of users reported that this method results in 90-degree rotated images, uncomment at your own risk
 			// Credit: https://stackoverflow.com/a/15858955
-			NSDictionary *metadata = [info objectForKey:UIImagePickerControllerMediaMetadata];
+			/*NSDictionary *metadata = [info objectForKey:UIImagePickerControllerMediaMetadata];
 			NSMutableDictionary *mutableMetadata = nil;
 			CFDictionaryRef metadataRef;
 			CFStringRef imageType;
@@ -360,10 +361,10 @@ static int imagePickerState = 0; // 0 -> none, 1 -> showing, 2 -> finished
 					NSLog(@"Failed to finalize the image");
 				
 				CFRelease(imageDestination);
-			}
+			}*/
 			
 			if (path == nil) {
-				NSLog(@"Attempting to save the image without metadata as fallback");
+				//NSLog(@"Attempting to save the image without metadata as fallback");
 				
 				if ((saveAsJPEG && [UIImageJPEGRepresentation([self scaleImage:image maxSize:cameraMaxImageSize], 1.0) writeToFile:pickedMediaSavePath atomically:YES]) ||
 					(!saveAsJPEG && [UIImagePNGRepresentation([self scaleImage:image maxSize:cameraMaxImageSize]) writeToFile:pickedMediaSavePath atomically:YES]) )
