@@ -1,6 +1,6 @@
 # Unity Native Camera Plugin
 
-**Available on Asset Store:** https://www.assetstore.unity3d.com/en/#!/content/117802
+**Available on Asset Store:** https://assetstore.unity.com/packages/tools/integration/native-camera-for-android-ios-117802
 
 **Forum Thread:** https://forum.unity.com/threads/native-camera-for-android-ios-open-source.529560/
 
