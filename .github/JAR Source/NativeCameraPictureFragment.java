@@ -53,10 +53,9 @@ public class NativeCameraPictureFragment extends Fragment
 			try
 			{
 				if( photoFile.exists() )
-				{
-					photoFile.delete();
+					NativeCameraUtils.ClearFileContents( photoFile );
+				else
 					photoFile.createNewFile();
-				}
 			}
 			catch( Exception e )
 			{

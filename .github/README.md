@@ -8,7 +8,15 @@
 
 This plugin helps you take pictures/record videos natively with your device's camera on Android and iOS. It has built-in support for runtime permissions, as well.
 
-After importing [NativeCamera.unitypackage](https://github.com/yasirkula/UnityNativeCamera/releases) to your project, only a few steps are required to set up the plugin:
+## INSTALLATION
+
+There are 4 ways to install this plugin:
+
+- import [NativeCamera.unitypackage](https://github.com/yasirkula/UnityNativeCamera/releases) via *Assets-Import Package*
+- clone/[download](https://github.com/yasirkula/UnityNativeCamera/archive/master.zip) this repository and move the *Plugins* folder to your Unity project's *Assets* folder
+- import it from [Asset Store](https://assetstore.unity.com/packages/tools/integration/native-camera-for-android-ios-117802)
+- *(via Package Manager)* add the following line to *Packages/manifest.json*:
+  - `"com.yasirkula.nativecamera": "https://github.com/yasirkula/UnityNativeCamera.git",`
 
 ### Android Setup
 
@@ -20,10 +28,10 @@ For reference, the legacy documentation is available at: https://github.com/yasi
 
 There are two ways to set up the plugin on iOS:
 
-- **a. Automated Setup:** change the values of **CAMERA_USAGE_DESCRIPTION** and **MICROPHONE_USAGE_DESCRIPTION** in *Plugins/NativeCamera/Editor/NCPostProcessBuild.cs*
+- **a. Automated Setup:** *(optional)* change the values of **CAMERA_USAGE_DESCRIPTION** and **MICROPHONE_USAGE_DESCRIPTION** in *Plugins/NativeCamera/Editor/NCPostProcessBuild.cs*
 - **b. Manual Setup:** see: https://github.com/yasirkula/UnityNativeCamera/wiki/Manual-Setup-for-iOS
 
-## How To
+## HOW TO
 
 ### A. Accessing Camera
 
@@ -83,7 +91,7 @@ After building your project, verify that NativeCamera's `<provider ... />` tag i
 
 If your project uses ProGuard, try adding the following line to ProGuard filters: `-keep class com.yasirkula.unity.* { *; }`
 
-## Example Code
+## EXAMPLE CODE
 
 The following code has two functions:
 

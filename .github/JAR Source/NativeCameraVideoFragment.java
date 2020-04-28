@@ -95,10 +95,9 @@ public class NativeCameraVideoFragment extends Fragment
 				try
 				{
 					if( videoFile.exists() )
-					{
-						videoFile.delete();
+						NativeCameraUtils.ClearFileContents( videoFile );
+					else
 						videoFile.createNewFile();
-					}
 				}
 				catch( Exception e )
 				{

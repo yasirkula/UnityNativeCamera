@@ -23,10 +23,12 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 
 /**
  * Created by yasirkula on 30.04.2018.
@@ -106,6 +108,30 @@ public class NativeCameraUtils
 		}
 	}
 
+	// Credit: https://stackoverflow.com/a/6994668/2373034
+	public static void ClearFileContents( File file ) throws IOException
+	{
+		RandomAccessFile stream = null;
+		try
+		{
+			stream = new RandomAccessFile( file, "rw" );
+			stream.setLength( 0 );
+		}
+		finally
+		{
+			if( stream != null )
+			{
+				try
+				{
+					stream.close();
+				}
+				catch( Exception e )
+				{
+				}
+			}
+		}
+	}
+
 	// Credit: https://stackoverflow.com/a/9293885/2373034
 	public static void CopyFile( Context context, File src, File dst, Uri rawUri )
 	{
@@ -115,10 +141,7 @@ public class NativeCameraUtils
 				return;
 
 			if( dst.exists() )
-			{
-				dst.delete();
-				dst.createNewFile();
-			}
+				ClearFileContents( dst );
 
 			InputStream in = new FileInputStream( src );
 			try
