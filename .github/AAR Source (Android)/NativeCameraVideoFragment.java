@@ -33,7 +33,7 @@ public class NativeCameraVideoFragment extends Fragment
 
 	private final NativeCameraMediaReceiver mediaReceiver;
 	private String fileTargetPath;
-	private int lastVideoId;
+	private int lastVideoId = Integer.MAX_VALUE;
 
 	public NativeCameraVideoFragment()
 	{
@@ -66,10 +66,17 @@ public class NativeCameraVideoFragment extends Fragment
 			{
 				videoCursor = getActivity().getContentResolver().query( MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
 						new String[] { MediaStore.Video.Media._ID }, null, null, MediaStore.Video.Media._ID + " DESC" );
-				if( videoCursor != null && videoCursor.moveToFirst() )
-					lastVideoId = videoCursor.getInt( videoCursor.getColumnIndex( MediaStore.Video.Media._ID ) );
-				else
-					lastVideoId = Integer.MAX_VALUE;
+				if( videoCursor != null )
+				{
+					if( videoCursor.moveToFirst() )
+						lastVideoId = videoCursor.getInt( videoCursor.getColumnIndex( MediaStore.Video.Media._ID ) );
+					else if( videoCursor.getCount() <= 0 )
+					{
+						// If there are currently no videos in the Gallery, after the video is captured, querying the Gallery with
+						// "_ID > lastVideoId" will return the newly captured video since its ID will always be greater than Integer.MIN_VALUE
+						lastVideoId = Integer.MIN_VALUE;
+					}
+				}
 			}
 			catch( Exception e )
 			{

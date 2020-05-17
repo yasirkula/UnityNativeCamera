@@ -26,7 +26,7 @@ public class NativeCameraPictureFragment extends Fragment
 
 	private final NativeCameraMediaReceiver mediaReceiver;
 	private String fileTargetPath;
-	private int lastImageId;
+	private int lastImageId = Integer.MAX_VALUE;
 
 	public NativeCameraPictureFragment()
 	{
@@ -74,10 +74,17 @@ public class NativeCameraPictureFragment extends Fragment
 			{
 				imageCursor = getActivity().getContentResolver().query( MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
 						new String[] { MediaStore.Images.Media._ID }, null, null, MediaStore.Images.Media._ID + " DESC" );
-				if( imageCursor != null && imageCursor.moveToFirst() )
-					lastImageId = imageCursor.getInt( imageCursor.getColumnIndex( MediaStore.Images.Media._ID ) );
-				else
-					lastImageId = Integer.MAX_VALUE;
+				if( imageCursor != null )
+				{
+					if( imageCursor.moveToFirst() )
+						lastImageId = imageCursor.getInt( imageCursor.getColumnIndex( MediaStore.Images.Media._ID ) );
+					else if( imageCursor.getCount() <= 0 )
+					{
+						// If there are currently no images in the Gallery, after the image is captured, querying the Gallery with
+						// "_ID > lastImageId" will return the newly captured image since its ID will always be greater than Integer.MIN_VALUE
+						lastImageId = Integer.MIN_VALUE;
+					}
+				}
 			}
 			catch( Exception e )
 			{
