@@ -19,7 +19,9 @@ import android.util.Log;
 
 public class NativeCamera
 {
-	public static boolean KeepGalleryReferences = false;
+	public static boolean KeepGalleryReferences = false; // false: if camera app saves a copy of the image/video in Gallery, automatically delete it
+	public static boolean QuickCapture = true; // true: the Confirm/Delete screen after the capture is skipped
+	public static boolean UseDefaultCameraApp = true; // false: Intent.createChooser is used to pick the camera app
 
 	public static boolean HasCamera( Context context )
 	{

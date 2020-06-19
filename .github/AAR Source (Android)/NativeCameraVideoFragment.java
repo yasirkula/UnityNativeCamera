@@ -132,7 +132,10 @@ public class NativeCameraVideoFragment extends Fragment
 			else if( defaultCamera == 1 )
 				NativeCameraUtils.SetDefaultCamera( intent, false );
 
-			if( getActivity().getPackageManager().queryIntentActivities( intent, PackageManager.MATCH_DEFAULT_ONLY ).size() > 0 )
+			if( NativeCamera.QuickCapture )
+				intent.putExtra( "android.intent.extra.quickCapture", true );
+
+			if( NativeCamera.UseDefaultCameraApp && getActivity().getPackageManager().queryIntentActivities( intent, PackageManager.MATCH_DEFAULT_ONLY ).size() > 0 )
 				startActivityForResult( intent, CAMERA_VIDEO_CODE );
 			else
 				startActivityForResult( Intent.createChooser( intent, "" ), CAMERA_VIDEO_CODE );
