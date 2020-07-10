@@ -108,6 +108,9 @@ public static class NativeCamera
 	private static extern string _NativeCamera_GetVideoProperties( string path );
 
 	[System.Runtime.InteropServices.DllImport( "__Internal" )]
+	private static extern string _NativeCamera_GetVideoThumbnail( string path, string thumbnailSavePath, int maxSize, double captureTimeInSeconds );
+
+	[System.Runtime.InteropServices.DllImport( "__Internal" )]
 	private static extern string _NativeCamera_LoadImageAtPath( string path, string temporaryFilePath, int maxSize );
 #endif
 
@@ -326,6 +329,25 @@ public static class NativeCamera
 		}
 
 		return result;
+	}
+
+	public static Texture2D GetVideoThumbnail( string videoPath, int maxSize = -1, double captureTimeInSeconds = -1.0 )
+	{
+		if( maxSize <= 0 )
+			maxSize = 1024;
+
+#if !UNITY_EDITOR && UNITY_ANDROID
+		string thumbnailPath = AJC.CallStatic<string>( "GetVideoThumbnail", Context, videoPath, TemporaryImagePath + ".png", false, maxSize, captureTimeInSeconds );
+#elif !UNITY_EDITOR && UNITY_IOS
+		string thumbnailPath = _NativeCamera_GetVideoThumbnail( videoPath, TemporaryImagePath + ".png", maxSize, captureTimeInSeconds );
+#else
+		string thumbnailPath = null;
+#endif
+
+		if( !string.IsNullOrEmpty( thumbnailPath ) )
+			return LoadImageAtPath( thumbnailPath, maxSize );
+		else
+			return null;
 	}
 
 	public static ImageProperties GetImageProperties( string imagePath )

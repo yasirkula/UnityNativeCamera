@@ -123,6 +123,11 @@ public class NativeCamera
 		return NativeCameraUtils.GetVideoProperties( context, path );
 	}
 
+	public static String GetVideoThumbnail( Context context, final String path, final String savePath, final boolean saveAsJpeg, final int maxSize, final double captureTime )
+	{
+		return NativeCameraUtils.GetVideoThumbnail( context, path, savePath, saveAsJpeg, maxSize, captureTime );
+	}
+
 	private static boolean CanAccessCamera( Context context, NativeCameraMediaReceiver mediaReceiver )
 	{
 		if( !HasCamera( context ) )

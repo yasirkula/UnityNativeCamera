@@ -33,6 +33,16 @@ There are two ways to set up the plugin on iOS:
 - **a. Automated Setup:** *(optional)* change the values of **CAMERA_USAGE_DESCRIPTION** and **MICROPHONE_USAGE_DESCRIPTION** in *Plugins/NativeCamera/Editor/NCPostProcessBuild.cs*
 - **b. Manual Setup:** see: https://github.com/yasirkula/UnityNativeCamera/wiki/Manual-Setup-for-iOS
 
+## FAQ
+
+- **Can't use the camera, it says "Can't find ContentProvider, camera is inaccessible!" in Logcat**
+
+After building your project, verify that NativeCamera's `<provider ... />` tag is inserted in-between the `<application>...</application>` tags of *PROJECT_PATH/Temp/StagingArea/AndroidManifest.xml*. If not, please create a new **Issue**.
+
+- **Can't use the camera, it says "java.lang.ClassNotFoundException: com.yasirkula.unity.NativeCamera" in Logcat**
+
+If your project uses ProGuard, try adding the following line to ProGuard filters: `-keep class com.yasirkula.unity.* { *; }`
+
 ## HOW TO
 
 ### A. Accessing Camera
@@ -83,15 +93,9 @@ Beginning with *6.0 Marshmallow*, Android apps must request runtime permissions 
 - **generateMipmaps** determines whether texture should have mipmaps or not
 - **linearColorSpace** determines whether texture should be in linear color space or sRGB color space
 
-## FAQ
-
-- **Can't use the camera, it says "Can't find ContentProvider, camera is inaccessible!" in Logcat**
-
-After building your project, verify that NativeCamera's `<provider ... />` tag is inserted in-between the `<application>...</application>` tags of *PROJECT_PATH/Temp/StagingArea/AndroidManifest.xml*. If not, please create a new **Issue**.
-
-- **Can't use the camera, it says "java.lang.ClassNotFoundException: com.yasirkula.unity.NativeCamera" in Logcat**
-
-If your project uses ProGuard, try adding the following line to ProGuard filters: `-keep class com.yasirkula.unity.* { *; }`
+`Texture2D NativeCamera.GetVideoThumbnail( string videoPath, int maxSize = -1, double captureTimeInSeconds = -1.0 )`: creates a Texture2D thumbnail from a video file and returns it. Returns *null*, if something goes wrong.
+- **maxSize** determines the maximum size of the returned Texture2D in pixels. If untouched, its value will be set to 1024. It is recommended to set a small maxSize for better performance
+- **captureTimeInSeconds** determines the frame of the video that the thumbnail is captured from. If untouched, OS will decide this value
 
 ## EXAMPLE CODE
 
