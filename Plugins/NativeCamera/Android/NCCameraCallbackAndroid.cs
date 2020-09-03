@@ -31,7 +31,7 @@ namespace NativeCameraNamespace
 			}
 			finally
 			{
-				Object.Destroy( callbackHelper );
+				Object.Destroy( callbackHelper.gameObject );
 			}
 		}
 	}
