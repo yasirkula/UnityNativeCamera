@@ -93,9 +93,10 @@ Beginning with *6.0 Marshmallow*, Android apps must request runtime permissions 
 - **generateMipmaps** determines whether texture should have mipmaps or not
 - **linearColorSpace** determines whether texture should be in linear color space or sRGB color space
 
-`Texture2D NativeCamera.GetVideoThumbnail( string videoPath, int maxSize = -1, double captureTimeInSeconds = -1.0 )`: creates a Texture2D thumbnail from a video file and returns it. Returns *null*, if something goes wrong.
+`Texture2D NativeCamera.GetVideoThumbnail( string videoPath, int maxSize = -1, double captureTimeInSeconds = -1.0, bool markTextureNonReadable = true )`: creates a Texture2D thumbnail from a video file and returns it. Returns *null*, if something goes wrong.
 - **maxSize** determines the maximum size of the returned Texture2D in pixels. Larger thumbnails will be down-scaled. If untouched, its value will be set to *SystemInfo.maxTextureSize*. It is recommended to set a proper maxSize for better performance
 - **captureTimeInSeconds** determines the frame of the video that the thumbnail is captured from. If untouched, OS will decide this value
+- **markTextureNonReadable** (see *LoadImageAtPath*)
 
 ## EXAMPLE CODE
 
