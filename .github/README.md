@@ -43,6 +43,10 @@ After building your project, verify that NativeCamera's `<provider ... />` tag i
 
 If your project uses ProGuard, try adding the following line to ProGuard filters: `-keep class com.yasirkula.unity.* { *; }`
 
+- **NativeCamera functions return Permission.Denied even though I've granted the permission"**
+
+Declare `WRITE_EXTERNAL_STORAGE` permission manually in your [**Plugins/Android/AndroidManifest.xml** file](https://answers.unity.com/questions/982710/where-is-the-manifest-file-in-unity.html) with the `tools:node="replace"` attribute as follows: `<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="replace"/>` (you'll need to add the `xmlns:tools="http://schemas.android.com/tools"` attribute to the `<manifest ...>` element).
+
 ## HOW TO
 
 ### A. Accessing Camera
