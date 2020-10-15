@@ -32,6 +32,10 @@ static NSString *pickedMediaSavePath;
 static UIImagePickerController *imagePicker;
 static int cameraMaxImageSize = -1;
 static int imagePickerState = 0; // 0 -> none, 1 -> showing, 2 -> finished
+static BOOL recordingVideo = NO;
+static AVAudioSessionCategory unityAudioSessionCategory = AVAudioSessionCategoryAmbient;
+static NSUInteger unityAudioSessionCategoryOptions = 1;
+static AVAudioSessionMode unityAudioSessionMode = AVAudioSessionModeDefault;
 
 // Credit: https://stackoverflow.com/a/20464727/2373034
 + (int)checkPermission
@@ -154,6 +158,15 @@ static int imagePickerState = 0; // 0 -> none, 1 -> showing, 2 -> finished
 	else if( defaultCamera == 1 && [UIImagePickerController isCameraDeviceAvailable:UIImagePickerControllerCameraDeviceFront] )
 		imagePicker.cameraDevice = UIImagePickerControllerCameraDeviceFront;
 	
+	// Bugfix for https://github.com/yasirkula/UnityNativeCamera/issues/45
+	if( !imageMode )
+	{
+		unityAudioSessionCategory = [[AVAudioSession sharedInstance] category];
+		unityAudioSessionCategoryOptions = [[AVAudioSession sharedInstance] categoryOptions];
+		unityAudioSessionMode = [[AVAudioSession sharedInstance] mode];
+	}
+	
+	recordingVideo = !imageMode;
 	pickedMediaSavePath = imageSavePath;
 	cameraMaxImageSize = maxImageSize;
 	
@@ -172,6 +185,8 @@ static int imagePickerState = 0; // 0 -> none, 1 -> showing, 2 -> finished
 			return 1;
 		
 		imagePicker = nil;
+		[self restoreAudioSession];
+		
 		return 0;
 	}
 	
@@ -260,6 +275,7 @@ static int imagePickerState = 0; // 0 -> none, 1 -> showing, 2 -> finished
 	UnitySendMessage( "NCCameraCallbackiOS", "OnMediaReceived", [self getCString:path] );
 
 	[picker dismissViewControllerAnimated:NO completion:nil];
+	[self restoreAudioSession];
 }
 
 + (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
@@ -270,6 +286,31 @@ static int imagePickerState = 0; // 0 -> none, 1 -> showing, 2 -> finished
 	UnitySendMessage( "NCCameraCallbackiOS", "OnMediaReceived", "" );
 	
 	[picker dismissViewControllerAnimated:NO completion:nil];
+	[self restoreAudioSession];
+}
+
+// Bugfix for https://github.com/yasirkula/UnityNativeCamera/issues/45
++ (void)restoreAudioSession
+{
+	if( recordingVideo )
+	{
+		BOOL audioModeSwitchResult = YES;
+		NSError *error = nil;
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 100000
+		if( CHECK_IOS_VERSION( @"10.0" ) )
+			audioModeSwitchResult = [[AVAudioSession sharedInstance] setCategory:unityAudioSessionCategory mode:unityAudioSessionMode options:unityAudioSessionCategoryOptions error:&error];
+		else
+#endif
+			audioModeSwitchResult = [[AVAudioSession sharedInstance] setCategory:unityAudioSessionCategory withOptions:unityAudioSessionCategoryOptions error:&error] && [[AVAudioSession sharedInstance] setMode:unityAudioSessionMode error:&error];
+		
+		if( !audioModeSwitchResult )
+		{
+			if( error != nil )
+				NSLog( @"Error setting audio session category back to %@ with mode %@ and options %lu: %@", unityAudioSessionCategory, unityAudioSessionMode, (unsigned long) unityAudioSessionCategoryOptions, error );
+			else
+				NSLog( @"Error setting audio session category back to %@ with mode %@ and options %lu", unityAudioSessionCategory, unityAudioSessionMode, (unsigned long) unityAudioSessionCategoryOptions );
+		}
+	}
 }
 
 // Credit: https://stackoverflow.com/a/4170099/2373034
