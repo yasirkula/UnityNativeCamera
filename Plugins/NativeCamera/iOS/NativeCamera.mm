@@ -132,7 +132,7 @@ static AVAudioSessionMode unityAudioSessionMode = AVAudioSessionModeDefault;
 	}
 	
 	imagePicker = [[UIImagePickerController alloc] init];
-	imagePicker.delegate = self;
+	imagePicker.delegate = (id) self;
 	imagePicker.allowsEditing = NO;
 	imagePicker.sourceType = UIImagePickerControllerSourceTypeCamera;
 	

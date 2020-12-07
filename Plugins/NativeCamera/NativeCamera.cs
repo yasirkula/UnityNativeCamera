@@ -218,9 +218,14 @@ public static class NativeCamera
 		Permission result = RequestPermission();
 		if( result == Permission.Granted && !IsCameraBusy() )
 		{
-#if !UNITY_EDITOR && UNITY_ANDROID
+#if UNITY_EDITOR
+			string pickedFile = UnityEditor.EditorUtility.OpenFilePanelWithFilters( "Select image", "", new string[] { "Image files", "png,jpg,jpeg", "All files", "*" } );
+
+			if( callback != null )
+				callback( pickedFile != "" ? pickedFile : null );
+#elif UNITY_ANDROID
 			AJC.CallStatic( "TakePicture", Context, new NCCameraCallbackAndroid( callback ), (int) preferredCamera );
-#elif !UNITY_EDITOR && UNITY_IOS
+#elif UNITY_IOS
 			if( maxSize <= 0 )
 				maxSize = SystemInfo.maxTextureSize;
 
@@ -240,9 +245,14 @@ public static class NativeCamera
 		Permission result = RequestPermission();
 		if( result == Permission.Granted && !IsCameraBusy() )
 		{
-#if !UNITY_EDITOR && UNITY_ANDROID
+#if UNITY_EDITOR
+			string pickedFile = UnityEditor.EditorUtility.OpenFilePanelWithFilters( "Select video", "", new string[] { "Video files", "mp4,mov,wav,avi", "All files", "*" } );
+
+			if( callback != null )
+				callback( pickedFile != "" ? pickedFile : null );
+#elif UNITY_ANDROID
 			AJC.CallStatic( "RecordVideo", Context, new NCCameraCallbackAndroid( callback ), (int) preferredCamera, (int) quality, maxDuration, maxSizeBytes );
-#elif !UNITY_EDITOR && UNITY_IOS
+#elif UNITY_IOS
 			NCCameraCallbackiOS.Initialize( callback );
 			_NativeCamera_RecordVideo( (int) quality, maxDuration, (int) preferredCamera );
 #else
@@ -296,7 +306,7 @@ public static class NativeCamera
 		string loadPath = imagePath;
 #endif
 
-		String extension = Path.GetExtension( imagePath ).ToLowerInvariant();
+		string extension = Path.GetExtension( imagePath ).ToLowerInvariant();
 		TextureFormat format = ( extension == ".jpg" || extension == ".jpeg" ) ? TextureFormat.RGB24 : TextureFormat.RGBA32;
 
 		Texture2D result = new Texture2D( 2, 2, format, generateMipmaps, linearColorSpace );
@@ -379,7 +389,7 @@ public static class NativeCamera
 				mimeType = properties[2].Trim();
 				if( mimeType.Length == 0 )
 				{
-					String extension = Path.GetExtension( imagePath ).ToLowerInvariant();
+					string extension = Path.GetExtension( imagePath ).ToLowerInvariant();
 					if( extension == ".png" )
 						mimeType = "image/png";
 					else if( extension == ".jpg" || extension == ".jpeg" )
