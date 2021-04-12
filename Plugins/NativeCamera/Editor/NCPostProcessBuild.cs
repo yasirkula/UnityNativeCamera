@@ -1,7 +1,7 @@
-﻿using System.IO;
+﻿#if UNITY_IOS
+using System.IO;
 using UnityEditor;
 using UnityEngine;
-#if UNITY_IOS
 using UnityEditor.Callbacks;
 using UnityEditor.iOS.Xcode;
 #endif
@@ -14,17 +14,6 @@ namespace NativeCameraNamespace
 
 		private const string CAMERA_USAGE_DESCRIPTION = "The app requires access to the camera to take pictures or record videos with it.";
 		private const string MICROPHONE_USAGE_DESCRIPTION = "The app will capture microphone input in the recorded video.";
-
-		[InitializeOnLoadMethod]
-		public static void ValidatePlugin()
-		{
-			string jarPath = "Assets/Plugins/NativeCamera/Android/NativeCamera.jar";
-			if( File.Exists( jarPath ) )
-			{
-				Debug.Log( "Deleting obsolete " + jarPath );
-				AssetDatabase.DeleteAsset( jarPath );
-			}
-		}
 
 #if UNITY_IOS
 #pragma warning disable 0162

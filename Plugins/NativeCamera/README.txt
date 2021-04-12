@@ -28,7 +28,7 @@ There are two ways to set up the plugin on iOS:
 After building your project, verify that NativeCamera's "<provider ... />" tag is inserted in-between the "<application>...</application>" tags of PROJECT_PATH/Temp/StagingArea/AndroidManifest.xml. If not, please contact me.
 
 - Can't use the camera, it says "java.lang.ClassNotFoundException: com.yasirkula.unity.NativeCamera" in Logcat
-If your project uses ProGuard, try adding the following line to ProGuard filters: -keep class com.yasirkula.unity.* { *; }
+If you are sure that your plugin is up-to-date, then enable "Custom Proguard File" option from Player Settings and add the following line to that file: -keep class com.yasirkula.unity.* { *; }
 
 4. SCRIPTING API
 Please see the online documentation for a more in-depth documentation of the Scripting API: https://github.com/yasirkula/UnityNativeCamera
