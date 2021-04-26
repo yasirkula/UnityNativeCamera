@@ -21,7 +21,7 @@ There are two ways to set up the plugin on iOS:
 - set the value of ENABLED to false in NCPostProcessBuild.cs
 - build your project
 - enter a Camera Usage Description to Info.plist in Xcode
-- insert "-framework MobileCoreServices -framework ImageIO" to the "Other Linker Flags" of Unity-iPhone Target
+- insert "-framework MobileCoreServices -framework ImageIO" to the "Other Linker Flags" of Unity-iPhone Target (and UnityFramework Target on Unity 2019.3 or newer)
 
 3. FAQ
 - Can't use the camera, it says "Can't find ContentProvider, camera is inaccessible!" in Logcat
