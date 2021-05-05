@@ -35,10 +35,6 @@ There are two ways to set up the plugin on iOS:
 
 ## FAQ
 
-- **Can't use the camera, it says "Can't find ContentProvider, camera is inaccessible!" in Logcat**
-
-After building your project, verify that NativeCamera's `<provider ... />` tag is inserted in-between the `<application>...</application>` tags of *PROJECT_PATH/Temp/StagingArea/AndroidManifest.xml*. If not, please create a new **Issue**.
-
 - **Can't use the camera, it says "java.lang.ClassNotFoundException: com.yasirkula.unity.NativeCamera" in Logcat**
 
 If you are sure that your plugin is up-to-date, then enable **Custom Proguard File** option from *Player Settings* and add the following line to that file: `-keep class com.yasirkula.unity.* { *; }`
