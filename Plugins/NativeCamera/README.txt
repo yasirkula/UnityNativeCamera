@@ -3,8 +3,10 @@
 Online documentation & example code available at: https://github.com/yasirkula/UnityNativeCamera
 E-mail: yasirkula@gmail.com
 
+
 1. ABOUT
 This plugin helps you take pictures/record videos natively with your device's camera on Android & iOS.
+
 
 2. HOW TO
 NativeCamera no longer requires any manual setup on Android. If you were using an older version of the plugin, you need to remove NativeCamera's "<provider ... />" from your AndroidManifest.xml.
@@ -15,17 +17,19 @@ For reference, the legacy documentation is available at: https://github.com/yasi
 There are two ways to set up the plugin on iOS:
 
 2.2.a. Automated Setup for iOS
-- (optional) change the value of CAMERA_USAGE_DESCRIPTION in Plugins/NativeCamera/Editor/NCPostProcessBuild.cs
+- (optional) change the values of 'Camera Usage Description' and 'Microphone Usage Description' at 'Project Settings/yasirkula/Native Camera'
 
 2.2.b. Manual Setup for iOS
-- set the value of ENABLED to false in NCPostProcessBuild.cs
+- set the value of 'Automated Setup' to false at 'Project Settings/yasirkula/Native Camera'
 - build your project
 - enter a Camera Usage Description to Info.plist in Xcode
 - insert "-framework MobileCoreServices -framework ImageIO" to the "Other Linker Flags" of Unity-iPhone Target (and UnityFramework Target on Unity 2019.3 or newer)
 
+
 3. FAQ
 - Can't use the camera, it says "java.lang.ClassNotFoundException: com.yasirkula.unity.NativeCamera" in Logcat
 If you are sure that your plugin is up-to-date, then enable "Custom Proguard File" option from Player Settings and add the following line to that file: -keep class com.yasirkula.unity.* { *; }
+
 
 4. SCRIPTING API
 Please see the online documentation for a more in-depth documentation of the Scripting API: https://github.com/yasirkula/UnityNativeCamera

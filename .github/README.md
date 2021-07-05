@@ -30,7 +30,7 @@ For reference, the legacy documentation is available at: https://github.com/yasi
 
 There are two ways to set up the plugin on iOS:
 
-- **a. Automated Setup:** *(optional)* change the values of **CAMERA_USAGE_DESCRIPTION** and **MICROPHONE_USAGE_DESCRIPTION** in *Plugins/NativeCamera/Editor/NCPostProcessBuild.cs*
+- **a. Automated Setup:** *(optional)* change the values of **Camera Usage Description** and **Microphone Usage Description** at *Project Settings/yasirkula/Native Camera*
 - **b. Manual Setup:** see: https://github.com/yasirkula/UnityNativeCamera/wiki/Manual-Setup-for-iOS
 
 ## FAQ
