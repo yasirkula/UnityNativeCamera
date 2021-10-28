@@ -4,6 +4,8 @@
 
 **Forum Thread:** https://forum.unity.com/threads/native-camera-for-android-ios-open-source.529560/
 
+**Discord:** https://discord.gg/UJJt549AaV
+
 **[Support the Developer ☕](https://yasirkula.itch.io/unity3d)**
 
 This plugin helps you take pictures/record videos natively with your device's camera on Android and iOS. It has built-in support for runtime permissions, as well.
