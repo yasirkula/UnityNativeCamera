@@ -2,14 +2,17 @@ package com.yasirkula.unity;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.Locale;
@@ -109,8 +112,7 @@ public class NativeCameraVideoFragment extends Fragment
 				catch( Exception e )
 				{
 					Log.e( "Unity", "Exception:", e );
-
-					getFragmentManager().beginTransaction().remove( this ).commit();
+					onActivityResult( CAMERA_VIDEO_CODE, Activity.RESULT_CANCELED, null );
 					return;
 				}
 
@@ -135,10 +137,19 @@ public class NativeCameraVideoFragment extends Fragment
 			if( NativeCamera.QuickCapture )
 				intent.putExtra( "android.intent.extra.quickCapture", true );
 
-			if( NativeCamera.UseDefaultCameraApp && getActivity().getPackageManager().queryIntentActivities( intent, PackageManager.MATCH_DEFAULT_ONLY ).size() > 0 )
-				startActivityForResult( intent, CAMERA_VIDEO_CODE );
-			else
-				startActivityForResult( Intent.createChooser( intent, "" ), CAMERA_VIDEO_CODE );
+			try
+			{
+				//  MIUI devices have issues with Intent.createChooser on at least Android 11 (https://stackoverflow.com/questions/67785661/taking-and-picking-photos-on-poco-x3-with-android-11-does-not-work)
+				if( NativeCamera.UseDefaultCameraApp || ( Build.VERSION.SDK_INT == 30 && NativeCameraUtils.IsXiaomiOrMIUI() ) )
+					startActivityForResult( intent, CAMERA_VIDEO_CODE );
+				else
+					startActivityForResult( Intent.createChooser( intent, "" ), CAMERA_VIDEO_CODE );
+			}
+			catch( ActivityNotFoundException e )
+			{
+				Toast.makeText( getActivity(), "No apps can perform this action.", Toast.LENGTH_LONG ).show();
+				onActivityResult( CAMERA_VIDEO_CODE, Activity.RESULT_CANCELED, null );
+			}
 		}
 	}
 
