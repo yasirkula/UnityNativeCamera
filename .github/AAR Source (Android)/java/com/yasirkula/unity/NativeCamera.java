@@ -80,8 +80,10 @@ public class NativeCamera
 		if( Build.VERSION.SDK_INT < Build.VERSION_CODES.M )
 			return 1;
 
-		if( context.checkSelfPermission( Manifest.permission.WRITE_EXTERNAL_STORAGE ) != PackageManager.PERMISSION_GRANTED ||
-				context.checkSelfPermission( Manifest.permission.READ_EXTERNAL_STORAGE ) != PackageManager.PERMISSION_GRANTED )
+		if( context.checkSelfPermission( Manifest.permission.READ_EXTERNAL_STORAGE ) != PackageManager.PERMISSION_GRANTED )
+			return 0;
+
+		if( Build.VERSION.SDK_INT < 30 && context.checkSelfPermission( Manifest.permission.WRITE_EXTERNAL_STORAGE ) != PackageManager.PERMISSION_GRANTED )
 			return 0;
 
 		// Credit: https://blog.egorand.me/taking-photos-not-so-simply-how-i-got-bitten-by-action_image_capture/

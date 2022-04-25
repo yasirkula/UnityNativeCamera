@@ -57,9 +57,19 @@ public class NativeCameraPermissionFragment extends Fragment
 		{
 			String[] permissions;
 			if( NativeCameraUtils.IsPermissionDefinedInManifest( getActivity(), Manifest.permission.CAMERA ) )
-				permissions = new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA };
+			{
+				if( Build.VERSION.SDK_INT < 30 )
+					permissions = new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA };
+				else
+					permissions = new String[] { Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA };
+			}
 			else
-				permissions = new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE };
+			{
+				if( Build.VERSION.SDK_INT < 30 )
+					permissions = new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE };
+				else
+					permissions = new String[] { Manifest.permission.READ_EXTERNAL_STORAGE };
+			}
 
 			requestPermissions( permissions, PERMISSIONS_REQUEST_CODE );
 		}
