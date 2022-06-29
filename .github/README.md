@@ -37,6 +37,10 @@ There are two ways to set up the plugin on iOS:
 
 ## FAQ
 
+- **Audio is muted on iOS after calling NativeCamera.RecordVideo**
+
+Please see: https://forum.unity.com/threads/native-camera-for-android-ios-open-source.529560/page-9#post-8207157
+
 - **Can't use the camera, it says "java.lang.ClassNotFoundException: com.yasirkula.unity.NativeCamera" in Logcat**
 
 If you are sure that your plugin is up-to-date, then enable **Custom Proguard File** option from *Player Settings* and add the following line to that file: `-keep class com.yasirkula.unity.* { *; }`
