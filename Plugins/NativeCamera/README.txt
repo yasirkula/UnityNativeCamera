@@ -1,4 +1,4 @@
-= Native Camera for Android & iOS (v1.3.5) =
+= Native Camera for Android & iOS (v1.3.6) =
 
 Online documentation & example code available at: https://github.com/yasirkula/UnityNativeCamera
 E-mail: yasirkula@gmail.com
@@ -62,8 +62,9 @@ bool NativeCamera.IsCameraBusy(); // returns true if the camera is currently ope
 //// Runtime Permissions ////
 
 // Accessing camera is only possible when permission state is Permission.Granted. TakePicture and RecordVideo functions request permission internally (and return the result) but you can also check/request the permissions manually
-NativeCamera.Permission NativeCamera.CheckPermission();
-NativeCamera.Permission NativeCamera.RequestPermission();
+// isPicturePermission: whether we're checking permission to take a picture or record a video. Has no effect on iOS
+NativeCamera.Permission NativeCamera.CheckPermission( bool isPicturePermission );
+NativeCamera.Permission NativeCamera.RequestPermission( bool isPicturePermission );
 
 // If permission state is Permission.Denied, user must grant the necessary permission(s) manually from the Settings (Android requires Storage and, if declared in AndroidManifest, Camera permissions; iOS requires Camera permission). These functions help you open the Settings directly from within the app
 void NativeCamera.OpenSettings();

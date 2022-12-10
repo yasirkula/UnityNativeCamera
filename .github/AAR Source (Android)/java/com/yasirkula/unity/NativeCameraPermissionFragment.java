@@ -30,9 +30,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
+import java.util.ArrayList;
+
 @TargetApi( Build.VERSION_CODES.M )
 public class NativeCameraPermissionFragment extends Fragment
 {
+	public static final String PICTURE_PERMISSION_ID = "NC_PictureMode";
 	private static final int PERMISSIONS_REQUEST_CODE = 120645;
 
 	private final NativeCameraPermissionReceiver permissionReceiver;
@@ -52,26 +55,31 @@ public class NativeCameraPermissionFragment extends Fragment
 	{
 		super.onCreate( savedInstanceState );
 		if( permissionReceiver == null )
-			getFragmentManager().beginTransaction().remove( this ).commit();
+			onRequestPermissionsResult( PERMISSIONS_REQUEST_CODE, new String[0], new int[0] );
 		else
 		{
-			String[] permissions;
+			ArrayList<String> permissions = new ArrayList<String>( 3 );
 			if( NativeCameraUtils.IsPermissionDefinedInManifest( getActivity(), Manifest.permission.CAMERA ) )
-			{
-				if( Build.VERSION.SDK_INT < 30 )
-					permissions = new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA };
-				else
-					permissions = new String[] { Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA };
-			}
+				permissions.add( Manifest.permission.CAMERA );
+
+			if( Build.VERSION.SDK_INT < 30 )
+				permissions.add( Manifest.permission.WRITE_EXTERNAL_STORAGE );
+
+			if( Build.VERSION.SDK_INT < 33 || getActivity().getApplicationInfo().targetSdkVersion < 33 )
+				permissions.add( Manifest.permission.READ_EXTERNAL_STORAGE );
 			else
 			{
-				if( Build.VERSION.SDK_INT < 30 )
-					permissions = new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE };
+				boolean isPicturePermission = getArguments().getBoolean( PICTURE_PERMISSION_ID );
+				if( isPicturePermission )
+					permissions.add( "android.permission.READ_MEDIA_IMAGES" );
 				else
-					permissions = new String[] { Manifest.permission.READ_EXTERNAL_STORAGE };
+					permissions.add( "android.permission.READ_MEDIA_VIDEO" );
 			}
 
-			requestPermissions( permissions, PERMISSIONS_REQUEST_CODE );
+			String[] permissionsArray = new String[permissions.size()];
+			permissions.toArray( permissionsArray );
+
+			requestPermissions( permissionsArray, PERMISSIONS_REQUEST_CODE );
 		}
 	}
 

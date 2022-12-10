@@ -22,6 +22,7 @@ public class NativeCamera
 	public static boolean KeepGalleryReferences = false; // false: if camera app saves a copy of the image/video in Gallery, automatically delete it
 	public static boolean QuickCapture = true; // true: the Confirm/Delete screen after the capture is skipped
 	public static boolean UseDefaultCameraApp = true; // false: Intent.createChooser is used to pick the camera app
+	public static boolean PermissionFreeMode = false; // true: Permissions for reading/writing media elements won't be requested. It might cause undesired side effects like a copy of the captured image/video being saved to Gallery or the captured image having a very low resolution
 
 	public static boolean HasCamera( Context context )
 	{
@@ -31,7 +32,7 @@ public class NativeCamera
 
 	public static void TakePicture( Context context, NativeCameraMediaReceiver mediaReceiver, int defaultCamera )
 	{
-		if( !CanAccessCamera( context, mediaReceiver ) )
+		if( !CanAccessCamera( context, mediaReceiver, true ) )
 			return;
 
 		Bundle bundle = new Bundle();
@@ -46,7 +47,7 @@ public class NativeCamera
 
 	public static void RecordVideo( Context context, NativeCameraMediaReceiver mediaReceiver, int defaultCamera, int quality, int maxDuration, long maxSize )
 	{
-		if( !CanAccessCamera( context, mediaReceiver ) )
+		if( !CanAccessCamera( context, mediaReceiver, false ) )
 			return;
 
 		Bundle bundle = new Bundle();
@@ -75,26 +76,44 @@ public class NativeCamera
 	}
 
 	@TargetApi( Build.VERSION_CODES.M )
-	public static int CheckPermission( Context context )
+	public static int CheckPermission( Context context, final boolean isPicturePermission )
 	{
 		if( Build.VERSION.SDK_INT < Build.VERSION_CODES.M )
 			return 1;
 
-		if( context.checkSelfPermission( Manifest.permission.READ_EXTERNAL_STORAGE ) != PackageManager.PERMISSION_GRANTED )
-			return 0;
+		if( !PermissionFreeMode )
+		{
+			if( Build.VERSION.SDK_INT < 30 && context.checkSelfPermission( Manifest.permission.WRITE_EXTERNAL_STORAGE ) != PackageManager.PERMISSION_GRANTED )
+				return 0;
 
-		if( Build.VERSION.SDK_INT < 30 && context.checkSelfPermission( Manifest.permission.WRITE_EXTERNAL_STORAGE ) != PackageManager.PERMISSION_GRANTED )
-			return 0;
+			if( Build.VERSION.SDK_INT < 33 || context.getApplicationInfo().targetSdkVersion < 33 )
+			{
+				if( context.checkSelfPermission( Manifest.permission.READ_EXTERNAL_STORAGE ) != PackageManager.PERMISSION_GRANTED )
+					return 0;
+			}
+			else if( isPicturePermission )
+			{
+				if( context.checkSelfPermission( "android.permission.READ_MEDIA_IMAGES" ) != PackageManager.PERMISSION_GRANTED )
+					return 0;
+			}
+			else
+			{
+				if( context.checkSelfPermission( "android.permission.READ_MEDIA_VIDEO" ) != PackageManager.PERMISSION_GRANTED )
+					return 0;
+			}
+		}
 
 		// Credit: https://blog.egorand.me/taking-photos-not-so-simply-how-i-got-bitten-by-action_image_capture/
-		return !NativeCameraUtils.IsPermissionDefinedInManifest( context, Manifest.permission.CAMERA ) ||
-				context.checkSelfPermission( Manifest.permission.CAMERA ) == PackageManager.PERMISSION_GRANTED ? 1 : 0;
+		if( NativeCameraUtils.IsPermissionDefinedInManifest( context, Manifest.permission.CAMERA ) && context.checkSelfPermission( Manifest.permission.CAMERA ) != PackageManager.PERMISSION_GRANTED )
+			return 0;
+
+		return 1;
 	}
 
 	// Credit: https://github.com/Over17/UnityAndroidPermissions/blob/0dca33e40628f1f279decb67d901fd444b409cd7/src/UnityAndroidPermissions/src/main/java/com/unity3d/plugin/UnityAndroidPermissions.java
-	public static void RequestPermission( Context context, final NativeCameraPermissionReceiver permissionReceiver, final int lastCheckResult )
+	public static void RequestPermission( Context context, final NativeCameraPermissionReceiver permissionReceiver, final boolean isPicturePermission, final int lastCheckResult )
 	{
-		if( CheckPermission( context ) == 1 )
+		if( CheckPermission( context, isPicturePermission ) == 1 )
 		{
 			permissionReceiver.OnPermissionResult( 1 );
 			return;
@@ -106,7 +125,12 @@ public class NativeCamera
 			return;
 		}
 
+		Bundle bundle = new Bundle();
+		bundle.putBoolean( NativeCameraPermissionFragment.PICTURE_PERMISSION_ID, isPicturePermission );
+
 		final Fragment request = new NativeCameraPermissionFragment( permissionReceiver );
+		request.setArguments( bundle );
+
 		( (Activity) context ).getFragmentManager().beginTransaction().add( 0, request ).commit();
 	}
 
@@ -130,7 +154,7 @@ public class NativeCamera
 		return NativeCameraUtils.GetVideoThumbnail( context, path, savePath, saveAsJpeg, maxSize, captureTime );
 	}
 
-	private static boolean CanAccessCamera( Context context, NativeCameraMediaReceiver mediaReceiver )
+	private static boolean CanAccessCamera( Context context, NativeCameraMediaReceiver mediaReceiver, final boolean isPictureMode )
 	{
 		if( !HasCamera( context ) )
 		{
@@ -140,7 +164,7 @@ public class NativeCamera
 			return false;
 		}
 
-		if( CheckPermission( context ) != 1 )
+		if( CheckPermission( context, isPictureMode ) != 1 )
 		{
 			Log.e( "Unity", "Can't access camera, permission denied!" );
 

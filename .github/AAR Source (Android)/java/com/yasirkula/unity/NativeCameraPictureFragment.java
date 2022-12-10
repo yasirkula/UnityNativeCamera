@@ -46,7 +46,7 @@ public class NativeCameraPictureFragment extends Fragment
 	{
 		super.onCreate( savedInstanceState );
 		if( mediaReceiver == null )
-			getFragmentManager().beginTransaction().remove( this ).commit();
+			onActivityResult( CAMERA_PICTURE_CODE, Activity.RESULT_CANCELED, null );
 		else
 		{
 			int defaultCamera = getArguments().getInt( DEFAULT_CAMERA_ID );

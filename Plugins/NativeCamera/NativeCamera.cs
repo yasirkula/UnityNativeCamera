@@ -156,10 +156,10 @@ public static class NativeCamera
 	#endregion
 
 	#region Runtime Permissions
-	public static Permission CheckPermission()
+	public static Permission CheckPermission( bool isPicturePermission )
 	{
 #if !UNITY_EDITOR && UNITY_ANDROID
-		Permission result = (Permission) AJC.CallStatic<int>( "CheckPermission", Context );
+		Permission result = (Permission) AJC.CallStatic<int>( "CheckPermission", Context, isPicturePermission );
 		if( result == Permission.Denied && (Permission) PlayerPrefs.GetInt( "NativeCameraPermission", (int) Permission.ShouldAsk ) == Permission.ShouldAsk )
 			result = Permission.ShouldAsk;
 
@@ -171,7 +171,7 @@ public static class NativeCamera
 #endif
 	}
 
-	public static Permission RequestPermission()
+	public static Permission RequestPermission( bool isPicturePermission )
 	{
 #if !UNITY_EDITOR && UNITY_ANDROID
 		object threadLock = new object();
@@ -179,7 +179,7 @@ public static class NativeCamera
 		{
 			NCPermissionCallbackAndroid nativeCallback = new NCPermissionCallbackAndroid( threadLock );
 
-			AJC.CallStatic( "RequestPermission", Context, nativeCallback, PlayerPrefs.GetInt( "NativeCameraPermission", (int) Permission.ShouldAsk ) );
+			AJC.CallStatic( "RequestPermission", Context, nativeCallback, isPicturePermission, PlayerPrefs.GetInt( "NativeCameraPermission", (int) Permission.ShouldAsk ) );
 
 			if( nativeCallback.Result == -1 )
 				System.Threading.Monitor.Wait( threadLock );
@@ -221,7 +221,7 @@ public static class NativeCamera
 	#region Camera Functions
 	public static Permission TakePicture( CameraCallback callback, int maxSize = -1, bool saveAsJPEG = true, PreferredCamera preferredCamera = PreferredCamera.Default )
 	{
-		Permission result = RequestPermission();
+		Permission result = RequestPermission( true );
 		if( result == Permission.Granted && !IsCameraBusy() )
 		{
 #if UNITY_EDITOR
@@ -248,7 +248,7 @@ public static class NativeCamera
 
 	public static Permission RecordVideo( CameraCallback callback, Quality quality = Quality.Default, int maxDuration = 0, long maxSizeBytes = 0L, PreferredCamera preferredCamera = PreferredCamera.Default )
 	{
-		Permission result = RequestPermission();
+		Permission result = RequestPermission( false );
 		if( result == Permission.Granted && !IsCameraBusy() )
 		{
 #if UNITY_EDITOR

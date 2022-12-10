@@ -24,9 +24,7 @@ There are 5 ways to install this plugin:
 
 ### Android Setup
 
-NativeCamera no longer requires any manual setup on Android. If you were using an older version of the plugin, you need to remove NativeCamera's `<provider ... />` from your *AndroidManifest.xml*.
-
-For reference, the legacy documentation is available at: https://github.com/yasirkula/UnityNativeCamera/wiki/Manual-Setup-for-Android
+NativeCamera no longer requires any manual setup on Android. For reference, the legacy manual setup documentation is available at: https://github.com/yasirkula/UnityNativeCamera/wiki/Manual-Setup-for-Android
 
 ### iOS Setup
 
@@ -74,14 +72,15 @@ Note that TakePicture and RecordVideo functions return a *NativeCamera.Permissio
 
 Beginning with *6.0 Marshmallow*, Android apps must request runtime permissions before accessing certain services, similar to iOS. There are two functions to handle permissions with this plugin:
 
-`NativeCamera.Permission NativeCamera.CheckPermission()`: checks whether the app has access to camera or not.
+`NativeCamera.Permission NativeCamera.CheckPermission( bool isPicturePermission )`: checks whether the app has access to camera or not.
+- **isPicturePermission** determines whether we're checking permission to take a picture or record a video. Has no effect on iOS
 
 **NativeCamera.Permission** is an enum that can take 3 values: 
 - **Granted**: we have the permission to access the camera
 - **ShouldAsk**: we don't have permission yet, but we can ask the user for permission via *RequestPermission* function (see below). On Android, as long as the user doesn't select "Don't ask again" while denying the permission, ShouldAsk is returned
 - **Denied**: we don't have permission and we can't ask the user for permission. In this case, user has to give the permission from Settings. This happens when user denies the permission on iOS (can't request permission again on iOS), when user selects "Don't ask again" while denying the permission on Android or when user is not allowed to give that permission (parental controls etc.)
 
-`NativeCamera.Permission NativeCamera.RequestPermission()`: requests permission to access the camera from the user and returns the result. It is recommended to show a brief explanation before asking the permission so that user understands why the permission is needed and doesn't click Deny or worse, "Don't ask again". Note that TakePicture and RecordVideo functions call RequestPermission internally and execute only if the permission is granted (the result of RequestPermission is then returned).
+`NativeCamera.Permission NativeCamera.RequestPermission( bool isPicturePermission )`: requests permission to access the camera from the user and returns the result. It is recommended to show a brief explanation before asking the permission so that user understands why the permission is needed and doesn't click Deny or worse, "Don't ask again". Note that TakePicture and RecordVideo functions call RequestPermission internally and execute only if the permission is granted (the result of RequestPermission is then returned).
 
 `NativeCamera.OpenSettings()`: opens the settings for this app, from where the user can manually grant permission in case current permission state is *Permission.Denied* (Android requires *Storage* and, if declared in AndroidManifest, *Camera* permissions; iOS requires *Camera* permission).
 
