@@ -131,6 +131,7 @@ public class NativeCameraUtils
 	}
 
 	// Credit: https://github.com/jamesmontemagno/MediaPlugin/issues/307#issuecomment-356199135
+	// Credit: https://stackoverflow.com/a/67288087/2373034
 	public static void SetDefaultCamera( Intent intent, boolean useRearCamera )
 	{
 		if( useRearCamera )
@@ -138,12 +139,17 @@ public class NativeCameraUtils
 			intent.putExtra( "android.intent.extras.LENS_FACING_BACK", 1 );
 			intent.putExtra( "android.intent.extras.CAMERA_FACING", 0 );
 			intent.putExtra( "android.intent.extra.USE_FRONT_CAMERA", false );
+			intent.putExtra( "com.google.assistant.extra.USE_FRONT_CAMERA", false );
 		}
 		else
 		{
 			intent.putExtra( "android.intent.extras.LENS_FACING_FRONT", 1 );
 			intent.putExtra( "android.intent.extras.CAMERA_FACING", 1 );
 			intent.putExtra( "android.intent.extra.USE_FRONT_CAMERA", true );
+			intent.putExtra( "com.google.assistant.extra.USE_FRONT_CAMERA", true );
+
+			intent.putExtra( "camerafacing", "front" );
+			intent.putExtra( "default_camera", "1" );
 		}
 	}
 

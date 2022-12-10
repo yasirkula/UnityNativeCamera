@@ -1,4 +1,4 @@
-= Native Camera for Android & iOS (v1.3.6) =
+= Native Camera for Android & iOS (v1.3.7) =
 
 Online documentation & example code available at: https://github.com/yasirkula/UnityNativeCamera
 E-mail: yasirkula@gmail.com
