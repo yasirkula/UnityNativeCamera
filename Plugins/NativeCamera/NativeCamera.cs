@@ -242,6 +242,11 @@ public static class NativeCamera
 				callback( null );
 #endif
 		}
+        else
+        {
+            if( callback != null )
+                callback( null );
+        }
 
 		return result;
 	}
@@ -266,6 +271,11 @@ public static class NativeCamera
 				callback( null );
 #endif
 		}
+        else
+        {
+            if( callback != null )
+                callback( null );
+        }
 
 		return result;
 	}
