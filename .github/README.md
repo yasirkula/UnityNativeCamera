@@ -6,7 +6,7 @@
 
 **Discord:** https://discord.gg/UJJt549AaV
 
-**[Support the Developer ☕](https://yasirkula.itch.io/unity3d)**
+**[GitHub Sponsors ☕](https://github.com/sponsors/yasirkula)**
 
 This plugin helps you take pictures/record videos natively with your device's camera on Android and iOS. It has built-in support for runtime permissions, as well.
 
