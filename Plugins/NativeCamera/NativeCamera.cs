@@ -179,7 +179,7 @@ public static class NativeCamera
 		{
 			NCPermissionCallbackAndroid nativeCallback = new NCPermissionCallbackAndroid( threadLock );
 
-			AJC.CallStatic( "RequestPermission", Context, nativeCallback, isPicturePermission, PlayerPrefs.GetInt( "NativeCameraPermission", (int) Permission.ShouldAsk ) );
+			AJC.CallStatic( "RequestPermission", Context, nativeCallback, isPicturePermission, (int) Permission.ShouldAsk );
 
 			if( nativeCallback.Result == -1 )
 				System.Threading.Monitor.Wait( threadLock );

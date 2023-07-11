@@ -67,19 +67,18 @@ public class NativeCameraPermissionFragment extends Fragment
 
 			if( Build.VERSION.SDK_INT < 33 || getActivity().getApplicationInfo().targetSdkVersion < 33 )
 				permissions.add( Manifest.permission.READ_EXTERNAL_STORAGE );
-			else
+			else if( Build.VERSION.SDK_INT < 34 )
+				permissions.add( getArguments().getBoolean( PICTURE_PERMISSION_ID ) ? "android.permission.READ_MEDIA_IMAGES" : "android.permission.READ_MEDIA_VIDEO" );
+
+			if( permissions.size() > 0 )
 			{
-				boolean isPicturePermission = getArguments().getBoolean( PICTURE_PERMISSION_ID );
-				if( isPicturePermission )
-					permissions.add( "android.permission.READ_MEDIA_IMAGES" );
-				else
-					permissions.add( "android.permission.READ_MEDIA_VIDEO" );
+				String[] permissionsArray = new String[permissions.size()];
+				permissions.toArray( permissionsArray );
+
+				requestPermissions( permissionsArray, PERMISSIONS_REQUEST_CODE );
 			}
-
-			String[] permissionsArray = new String[permissions.size()];
-			permissions.toArray( permissionsArray );
-
-			requestPermissions( permissionsArray, PERMISSIONS_REQUEST_CODE );
+			else
+				onRequestPermissionsResult( PERMISSIONS_REQUEST_CODE, new String[0], new int[0] );
 		}
 	}
 
