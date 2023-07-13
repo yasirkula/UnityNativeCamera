@@ -16,23 +16,7 @@ namespace NativeCameraNamespace
 
 		public void OnMediaReceived( string path )
 		{
-			callbackHelper.CallOnMainThread( () => MediaReceiveCallback( path ) );
-		}
-
-		private void MediaReceiveCallback( string path )
-		{
-			if( string.IsNullOrEmpty( path ) )
-				path = null;
-
-			try
-			{
-				if( callback != null )
-					callback( path );
-			}
-			finally
-			{
-				Object.Destroy( callbackHelper.gameObject );
-			}
+			callbackHelper.CallOnMainThread( () => callback( !string.IsNullOrEmpty( path ) ? path : null ) );
 		}
 	}
 }

@@ -16,9 +16,16 @@ namespace NativeCameraNamespace
 		{
 			if( mainThreadAction != null )
 			{
-				System.Action temp = mainThreadAction;
-				mainThreadAction = null;
-				temp();
+				try
+				{
+					System.Action temp = mainThreadAction;
+					mainThreadAction = null;
+					temp();
+				}
+				finally
+				{
+					Destroy( gameObject );
+				}
 			}
 		}
 

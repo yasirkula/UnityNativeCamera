@@ -53,6 +53,7 @@ public static class NativeCamera
 	// EXIF orientation: http://sylvana.net/jpegcrop/exif_orientation.html (indices are reordered)
 	public enum ImageOrientation { Unknown = -1, Normal = 0, Rotate90 = 1, Rotate180 = 2, Rotate270 = 3, FlipHorizontal = 4, Transpose = 5, FlipVertical = 6, Transverse = 7 };
 
+	public delegate void PermissionCallback( Permission permission );
 	public delegate void CameraCallback( string path );
 
 	#region Platform Specific Elements
@@ -90,7 +91,7 @@ public static class NativeCamera
 	private static extern int _NativeCamera_CheckPermission();
 
 	[System.Runtime.InteropServices.DllImport( "__Internal" )]
-	private static extern int _NativeCamera_RequestPermission();
+	private static extern int _NativeCamera_RequestPermission( int asyncMode );
 
 	[System.Runtime.InteropServices.DllImport( "__Internal" )]
 	private static extern int _NativeCamera_CanOpenSettings();
@@ -173,6 +174,10 @@ public static class NativeCamera
 
 	public static Permission RequestPermission( bool isPicturePermission )
 	{
+		// Don't block the main thread if the permission is already granted
+		if( CheckPermission( isPicturePermission ) == Permission.Granted )
+			return Permission.Granted;
+
 #if !UNITY_EDITOR && UNITY_ANDROID
 		object threadLock = new object();
 		lock( threadLock )
@@ -193,11 +198,33 @@ public static class NativeCamera
 			return (Permission) nativeCallback.Result;
 		}
 #elif !UNITY_EDITOR && UNITY_IOS
-		return (Permission) _NativeCamera_RequestPermission();
+		return (Permission) _NativeCamera_RequestPermission( 0 );
 #else
 		return Permission.Granted;
 #endif
 	}
+
+	public static void RequestPermissionAsync( PermissionCallback callback, bool isPicturePermission )
+	{
+#if !UNITY_EDITOR && UNITY_ANDROID
+		NCPermissionCallbackAsyncAndroid nativeCallback = new NCPermissionCallbackAsyncAndroid( callback );
+		AJC.CallStatic( "RequestPermission", Context, nativeCallback, isPicturePermission, (int) Permission.ShouldAsk );
+#elif !UNITY_EDITOR && UNITY_IOS
+		NCPermissionCallbackiOS.Initialize( callback );
+		_NativeCamera_RequestPermission( 1 );
+#else
+		callback( Permission.Granted );
+#endif
+	}
+
+#if UNITY_2018_4_OR_NEWER && !NATIVE_CAMERA_DISABLE_ASYNC_FUNCTIONS
+	public static Task<Permission> RequestPermissionAsync( bool isPicturePermission )
+	{
+		TaskCompletionSource<Permission> tcs = new TaskCompletionSource<Permission>();
+		RequestPermissionAsync( ( permission ) => tcs.SetResult( permission ), isPicturePermission );
+		return tcs.Task;
+	}
+#endif
 
 	public static bool CanOpenSettings()
 	{

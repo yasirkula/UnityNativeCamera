@@ -25,5 +25,22 @@ namespace NativeCameraNamespace
 			}
 		}
 	}
+
+	public class NCPermissionCallbackAsyncAndroid : AndroidJavaProxy
+	{
+		private readonly NativeCamera.PermissionCallback callback;
+		private readonly NCCallbackHelper callbackHelper;
+
+		public NCPermissionCallbackAsyncAndroid( NativeCamera.PermissionCallback callback ) : base( "com.yasirkula.unity.NativeCameraPermissionReceiver" )
+		{
+			this.callback = callback;
+			callbackHelper = new GameObject( "NCCallbackHelper" ).AddComponent<NCCallbackHelper>();
+		}
+
+		public void OnPermissionResult( int result )
+		{
+			callbackHelper.CallOnMainThread( () => callback( (NativeCamera.Permission) result ) );
+		}
+	}
 }
 #endif

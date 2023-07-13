@@ -14,7 +14,7 @@ extern UIViewController* UnityGetGLViewController();
 
 @interface UNativeCamera:NSObject
 + (int)checkPermission;
-+ (int)requestPermission;
++ (int)requestPermission:(BOOL)asyncMode;
 + (int)canOpenSettings;
 + (void)openSettings;
 + (int)hasCamera;
@@ -55,7 +55,16 @@ static AVAudioSessionMode unityAudioSessionMode = AVAudioSessionModeDefault;
 }
 
 // Credit: https://stackoverflow.com/a/20464727/2373034
-+ (int)requestPermission
++ (int)requestPermission:(BOOL)asyncMode
+{
+	int result = [self requestPermissionInternal:asyncMode];
+	if( asyncMode && result >= 0 ) // Result returned immediately, forward it
+		UnitySendMessage( "NCPermissionCallbackiOS", "OnPermissionRequested", [self getCString:[NSString stringWithFormat:@"%d", result]] );
+		
+	return result;
+}
+
++ (int)requestPermissionInternal:(BOOL)asyncMode
 {
 	if( CHECK_IOS_VERSION( @"7.0" ) )
 	{
@@ -64,17 +73,28 @@ static AVAudioSessionMode unityAudioSessionMode = AVAudioSessionModeDefault;
 			return 1;
 		else if( status == AVAuthorizationStatusNotDetermined )
 		{
-			__block BOOL authorized = NO;
-			
-			dispatch_semaphore_t sema = dispatch_semaphore_create( 0 );
-			[AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^( BOOL granted )
+			if( asyncMode )
 			{
-				authorized = granted;
-				dispatch_semaphore_signal( sema );
-			}];
-			dispatch_semaphore_wait( sema, DISPATCH_TIME_FOREVER );
-			
-			return authorized ? 1 : 0;
+				[AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^( BOOL granted )
+				{
+					UnitySendMessage( "NCPermissionCallbackiOS", "OnPermissionRequested", granted ? "1" : "0" );
+				}];
+				
+				return -1;
+			}
+			else
+			{
+				__block BOOL authorized = NO;
+				dispatch_semaphore_t sema = dispatch_semaphore_create( 0 );
+				[AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^( BOOL granted )
+				{
+					authorized = granted;
+					dispatch_semaphore_signal( sema );
+				}];
+				dispatch_semaphore_wait( sema, DISPATCH_TIME_FOREVER );
+				
+				return authorized ? 1 : 0;
+			}
 		}
 		else
 			return 0;
@@ -552,9 +572,9 @@ extern "C" int _NativeCamera_CheckPermission()
 	return [UNativeCamera checkPermission];
 }
 
-extern "C" int _NativeCamera_RequestPermission()
+extern "C" int _NativeCamera_RequestPermission( int asyncMode )
 {
-	return [UNativeCamera requestPermission];
+	return [UNativeCamera requestPermission:( asyncMode == 1 )];
 }
 
 extern "C" int _NativeCamera_CanOpenSettings()

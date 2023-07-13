@@ -1,4 +1,4 @@
-= Native Camera for Android & iOS (v1.3.9) =
+= Native Camera for Android & iOS (v1.4.0) =
 
 Online documentation & example code available at: https://github.com/yasirkula/UnityNativeCamera
 E-mail: yasirkula@gmail.com
@@ -38,6 +38,7 @@ enum NativeCamera.Permission { Denied = 0, Granted = 1, ShouldAsk = 2 };
 enum NativeCamera.Quality { Default = -1, Low = 0, Medium = 1, High = 2 };
 enum NativeCamera.ImageOrientation { Unknown = -1, Normal = 0, Rotate90 = 1, Rotate180 = 2, Rotate270 = 3, FlipHorizontal = 4, Transpose = 5, FlipVertical = 6, Transverse = 7 }; // EXIF orientation: http://sylvana.net/jpegcrop/exif_orientation.html (indices are reordered)
 
+delegate void PermissionCallback( NativeCamera.Permission permission );
 delegate void CameraCallback( string path );
 
 //// Accessing Camera ////
@@ -65,6 +66,10 @@ bool NativeCamera.IsCameraBusy(); // returns true if the camera is currently ope
 // isPicturePermission: whether we're checking permission to take a picture or record a video. Has no effect on iOS
 NativeCamera.Permission NativeCamera.CheckPermission( bool isPicturePermission );
 NativeCamera.Permission NativeCamera.RequestPermission( bool isPicturePermission );
+
+// Asynchronous variants of RequestPermission. Unlike RequestPermission, these functions don't freeze the app unnecessarily before the permission dialog is displayed. So it's recommended to call these functions instead
+void NativeCamera.RequestPermissionAsync( PermissionCallback callback, PermissionType permissionType, MediaType mediaTypes );
+Task<NativeCamera.Permission> NativeCamera.RequestPermissionAsync( PermissionType permissionType, MediaType mediaTypes );
 
 // If permission state is Permission.Denied, user must grant the necessary permission(s) manually from the Settings (Android requires Storage and, if declared in AndroidManifest, Camera permissions; iOS requires Camera permission). These functions help you open the Settings directly from within the app
 void NativeCamera.OpenSettings();

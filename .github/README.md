@@ -82,6 +82,11 @@ Beginning with *6.0 Marshmallow*, Android apps must request runtime permissions 
 
 `NativeCamera.Permission NativeCamera.RequestPermission( bool isPicturePermission )`: requests permission to access the camera from the user and returns the result. It is recommended to show a brief explanation before asking the permission so that user understands why the permission is needed and doesn't click Deny or worse, "Don't ask again". Note that TakePicture and RecordVideo functions call RequestPermission internally and execute only if the permission is granted (the result of RequestPermission is then returned).
 
+`void NativeCamera.RequestPermissionAsync( PermissionCallback callback, bool isPicturePermission )`: Asynchronous variant of *RequestPermission*. Unlike RequestPermission, this function doesn't freeze the app unnecessarily before the permission dialog is displayed. So it's recommended to call this function instead.
+- **PermissionCallback** takes `NativeCamera.Permission permission` parameter
+
+`Task<NativeCamera.Permission> NativeCamera.RequestPermissionAsync( bool isPicturePermission )`: Another asynchronous variant of *RequestPermission* (requires Unity 2018.4 or later).
+
 `NativeCamera.OpenSettings()`: opens the settings for this app, from where the user can manually grant permission in case current permission state is *Permission.Denied* (Android requires *Storage* and, if declared in AndroidManifest, *Camera* permissions; iOS requires *Camera* permission).
 
 `bool NativeCamera.CanOpenSettings()`: on iOS versions prior to 8.0, opening settings from within the app is not possible and in this case, this function returns *false*. Otherwise, it returns *true*.
@@ -135,6 +140,14 @@ void Update()
 			RecordVideo();
 		}
 	}
+}
+
+// Example code doesn't use this function but it is here for reference. It's recommended to ask for permissions manually using the
+// RequestPermissionAsync methods prior to calling NativeCamera functions
+private async void RequestPermissionAsynchronously( bool isPicturePermission )
+{
+	NativeCamera.Permission permission = await NativeCamera.RequestPermissionAsync( isPicturePermission );
+	Debug.Log( "Permission result: " + permission );
 }
 
 private void TakePicture( int maxSize )
