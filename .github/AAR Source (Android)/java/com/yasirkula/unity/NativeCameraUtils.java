@@ -756,7 +756,13 @@ public class NativeCameraUtils
 		}
 		finally
 		{
-			metadataRetriever.release();
+			try
+			{
+				metadataRetriever.release();
+			}
+			catch( Exception e )
+			{
+			}
 		}
 	}
 
@@ -824,7 +830,13 @@ public class NativeCameraUtils
 				}
 				finally
 				{
-					metadataRetriever.release();
+					try
+					{
+						metadataRetriever.release();
+					}
+					catch( Exception e )
+					{
+					}
 				}
 			}
 

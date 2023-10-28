@@ -91,13 +91,6 @@ public class NativeCamera
 				if( context.checkSelfPermission( Manifest.permission.READ_EXTERNAL_STORAGE ) != PackageManager.PERMISSION_GRANTED )
 					return 0;
 			}
-			else if( Build.VERSION.SDK_INT < 34 && context.checkSelfPermission( isPicturePermission ? "android.permission.READ_MEDIA_IMAGES" : "android.permission.READ_MEDIA_VIDEO" ) != PackageManager.PERMISSION_GRANTED )
-			{
-				// On Android 14+ (34), partial media access permission is introduced which we want to avoid in a camera app (it'd be confusing for the end user):
-				// https://developer.android.com/about/versions/14/changes/partial-photo-video-access
-				// We're hoping that by now, the native camera apps have become smart enough to avoid saving the captured media to Gallery.
-				return 0;
-			}
 		}
 
 		// If CAMERA permission is declared, we must request it: https://developer.android.com/reference/android/provider/MediaStore#ACTION_IMAGE_CAPTURE

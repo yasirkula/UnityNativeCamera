@@ -13,6 +13,4 @@
 	<uses-feature android:name="android.hardware.camera.front" android:required="false" />
 	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="replace" />
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="replace" />
-	<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="replace" />
-	<uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="replace" />
 </manifest>
