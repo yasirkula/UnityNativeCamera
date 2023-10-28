@@ -110,8 +110,10 @@ namespace NativeCameraNamespace
 				plist.ReadFromString( File.ReadAllText( plistPath ) );
 
 				PlistElementDict rootDict = plist.root;
-				rootDict.SetString( "NSCameraUsageDescription", Settings.Instance.CameraUsageDescription );
-				rootDict.SetString( "NSMicrophoneUsageDescription", Settings.Instance.MicrophoneUsageDescription );
+				if( !string.IsNullOrEmpty( Settings.Instance.CameraUsageDescription ) )
+					rootDict.SetString( "NSCameraUsageDescription", Settings.Instance.CameraUsageDescription );
+				if( !string.IsNullOrEmpty( Settings.Instance.MicrophoneUsageDescription ) )
+					rootDict.SetString( "NSMicrophoneUsageDescription", Settings.Instance.MicrophoneUsageDescription );
 
 				File.WriteAllText( plistPath, plist.WriteToString() );
 			}
