@@ -42,7 +42,7 @@ public class NativeCamera
 		final Fragment request = new NativeCameraPictureFragment( mediaReceiver );
 		request.setArguments( bundle );
 
-		( (Activity) context ).getFragmentManager().beginTransaction().add( 0, request ).commit();
+		( (Activity) context ).getFragmentManager().beginTransaction().add( 0, request ).commitAllowingStateLoss();
 	}
 
 	public static void RecordVideo( Context context, NativeCameraMediaReceiver mediaReceiver, int defaultCamera, int quality, int maxDuration, long maxSize )
@@ -60,7 +60,7 @@ public class NativeCamera
 		final Fragment request = new NativeCameraVideoFragment( mediaReceiver );
 		request.setArguments( bundle );
 
-		( (Activity) context ).getFragmentManager().beginTransaction().add( 0, request ).commit();
+		( (Activity) context ).getFragmentManager().beginTransaction().add( 0, request ).commitAllowingStateLoss();
 	}
 
 	// Credit: https://stackoverflow.com/a/35456817/2373034
@@ -121,7 +121,7 @@ public class NativeCamera
 		final Fragment request = new NativeCameraPermissionFragment( permissionReceiver );
 		request.setArguments( bundle );
 
-		( (Activity) context ).getFragmentManager().beginTransaction().add( 0, request ).commit();
+		( (Activity) context ).getFragmentManager().beginTransaction().add( 0, request ).commitAllowingStateLoss();
 	}
 
 	public static String LoadImageAtPath( Context context, String path, final String temporaryFilePath, final int maxSize )

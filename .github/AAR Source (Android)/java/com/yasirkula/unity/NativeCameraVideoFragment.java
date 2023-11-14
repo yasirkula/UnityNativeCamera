@@ -250,6 +250,6 @@ public class NativeCameraVideoFragment extends Fragment
 		if( mediaReceiver != null )
 			mediaReceiver.OnMediaReceived( result != null && result.length() > 1L ? result.getAbsolutePath() : "" );
 
-		getFragmentManager().beginTransaction().remove( this ).commit();
+		getFragmentManager().beginTransaction().remove( this ).commitAllowingStateLoss();
 	}
 }
