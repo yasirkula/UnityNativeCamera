@@ -15,6 +15,7 @@ namespace NativeCameraNamespace
 			this.threadLock = threadLock;
 		}
 
+		[UnityEngine.Scripting.Preserve]
 		public void OnPermissionResult( int result )
 		{
 			Result = result;
@@ -37,6 +38,7 @@ namespace NativeCameraNamespace
 			callbackHelper = new GameObject( "NCCallbackHelper" ).AddComponent<NCCallbackHelper>();
 		}
 
+		[UnityEngine.Scripting.Preserve]
 		public void OnPermissionResult( int result )
 		{
 			callbackHelper.CallOnMainThread( () => callback( (NativeCamera.Permission) result ) );

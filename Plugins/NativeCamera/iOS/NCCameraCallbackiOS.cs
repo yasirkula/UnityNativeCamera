@@ -54,6 +54,7 @@ namespace NativeCameraNamespace
 			}
 		}
 
+		[UnityEngine.Scripting.Preserve]
 		public void OnMediaReceived( string path )
 		{
 			IsBusy = false;

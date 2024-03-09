@@ -14,6 +14,7 @@ namespace NativeCameraNamespace
 			callbackHelper = new GameObject( "NCCallbackHelper" ).AddComponent<NCCallbackHelper>();
 		}
 
+		[UnityEngine.Scripting.Preserve]
 		public void OnMediaReceived( string path )
 		{
 			callbackHelper.CallOnMainThread( () => callback( !string.IsNullOrEmpty( path ) ? path : null ) );

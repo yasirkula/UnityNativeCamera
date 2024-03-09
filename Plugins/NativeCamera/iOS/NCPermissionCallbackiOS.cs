@@ -21,6 +21,7 @@ namespace NativeCameraNamespace
 			instance.callback = callback;
 		}
 
+		[UnityEngine.Scripting.Preserve]
 		public void OnPermissionRequested( string message )
 		{
 			NativeCamera.PermissionCallback _callback = callback;
