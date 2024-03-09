@@ -2,6 +2,7 @@ package com.yasirkula.unity;
 
 import android.annotation.TargetApi;
 import android.content.ClipData;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
@@ -20,8 +21,10 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.util.Size;
+import android.webkit.MimeTypeMap;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,6 +35,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.util.Locale;
 
 /**
  * Created by yasirkula on 30.04.2018.
@@ -289,8 +293,120 @@ public class NativeCameraUtils
 		return false;
 	}
 
+	public static String GetPathFromURIOrCopyFile( Context context, Uri uri )
+	{
+		if( uri == null )
+			return null;
+
+		String path = GetPathFromURI( context, uri );
+		if( path != null && path.length() > 0 )
+		{
+			// Check if file is accessible
+			FileInputStream inputStream = null;
+			try
+			{
+				inputStream = new FileInputStream( new File( path ) );
+				inputStream.read();
+
+				return path;
+			}
+			catch( Exception e )
+			{
+			}
+			finally
+			{
+				if( inputStream != null )
+				{
+					try
+					{
+						inputStream.close();
+					}
+					catch( Exception e )
+					{
+					}
+				}
+			}
+		}
+
+		// File path couldn't be determined, copy the file to an accessible temporary location
+		// Credit: https://developer.android.com/training/secure-file-sharing/retrieve-info.html#RetrieveFileInfo
+		ContentResolver resolver = context.getContentResolver();
+		Cursor returnCursor = null;
+		String filename = null;
+
+		try
+		{
+			returnCursor = resolver.query( uri, null, null, null, null );
+			if( returnCursor != null && returnCursor.moveToFirst() )
+				filename = returnCursor.getString( returnCursor.getColumnIndex( OpenableColumns.DISPLAY_NAME ) );
+		}
+		catch( Exception e )
+		{
+			Log.e( "Unity", "Exception:", e );
+		}
+		finally
+		{
+			if( returnCursor != null )
+				returnCursor.close();
+		}
+
+		String extension = null;
+		int filenameExtensionIndex = ( filename != null ) ? filename.lastIndexOf( '.' ) : -1;
+		if( filenameExtensionIndex > 0 && filenameExtensionIndex < filename.length() - 1 )
+			extension = filename.substring( filenameExtensionIndex ).toLowerCase( Locale.US );
+		else
+		{
+			String mime = resolver.getType( uri );
+			if( mime != null )
+			{
+				String mimeExtension = MimeTypeMap.getSingleton().getExtensionFromMimeType( mime );
+				if( mimeExtension != null && mimeExtension.length() > 0 )
+					extension = "." + mimeExtension;
+			}
+		}
+
+		if( extension == null )
+			extension = ".mp4";
+
+		try
+		{
+			InputStream input = resolver.openInputStream( uri );
+			if( input == null )
+				return null;
+
+			File tempFile = new File( context.getCacheDir().getAbsolutePath(), NativeCameraVideoFragment.VIDEO_NAME + extension );
+			OutputStream output = null;
+			try
+			{
+				output = new FileOutputStream( tempFile, false );
+
+				byte[] buf = new byte[4096];
+				int len;
+				while( ( len = input.read( buf ) ) > 0 )
+				{
+					output.write( buf, 0, len );
+				}
+
+				return tempFile.getAbsolutePath();
+			}
+			finally
+			{
+				if( output != null )
+					output.close();
+
+				input.close();
+			}
+		}
+		catch( Exception e )
+		{
+			Log.e( "Unity", "Exception:", e );
+		}
+
+		return null;
+	}
+
 	// Credit: https://stackoverflow.com/a/36714242/2373034
-	public static String getPathFromURI( Context context, Uri uri )
+	public static String GetPathFromURI( Context context, Uri uri )
 	{
 		if( uri == null )
 			return null;

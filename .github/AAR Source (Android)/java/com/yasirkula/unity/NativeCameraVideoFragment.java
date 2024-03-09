@@ -25,7 +25,7 @@ public class NativeCameraVideoFragment extends Fragment
 {
 	private static final int CAMERA_VIDEO_CODE = 554777;
 
-	private static final String VIDEO_NAME = "VID_camera";
+	public static final String VIDEO_NAME = "VID_camera";
 	public static final String DEFAULT_CAMERA_ID = "UNCV_DEF_CAMERA";
 	public static final String AUTHORITY_ID = "UNCV_AUTHORITY";
 	public static final String QUALITY_ID = "UNCV_QUALITY";
@@ -164,12 +164,12 @@ public class NativeCameraVideoFragment extends Fragment
 		{
 			if( data != null )
 			{
-				String path = NativeCameraUtils.getPathFromURI( getActivity(), data.getData() );
+				String path = NativeCameraUtils.GetPathFromURIOrCopyFile( getActivity(), data.getData() );
 				if( path != null && path.length() > 0 )
 					result = new File( path );
 			}
 
-			if( result == null && fileTargetPath != null && fileTargetPath.length() > 0 )
+			if( ( result == null || result.length() == 0 ) && fileTargetPath != null && fileTargetPath.length() > 0 )
 				result = new File( fileTargetPath );
 
 			if( lastVideoId != 0L ) // it got reset somehow?
