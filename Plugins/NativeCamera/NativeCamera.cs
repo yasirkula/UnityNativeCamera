@@ -279,7 +279,7 @@ public static class NativeCamera
 		if( result == Permission.Granted && !IsCameraBusy() )
 		{
 #if UNITY_EDITOR
-			string pickedFile = UnityEditor.EditorUtility.OpenFilePanelWithFilters( "Select video", "", new string[] { "Video files", "mp4,mov,wav,avi", "All files", "*" } );
+			string pickedFile = UnityEditor.EditorUtility.OpenFilePanelWithFilters( "Select video", "", new string[] { "Video files", "mp4,mov,webm,avi", "All files", "*" } );
 
 			if( callback != null )
 				callback( pickedFile != "" ? pickedFile : null );
