@@ -8,7 +8,7 @@
 
 **[GitHub Sponsors ☕](https://github.com/sponsors/yasirkula)**
 
-This plugin helps you take pictures/record videos natively with your device's camera on Android and iOS. It has built-in support for runtime permissions, as well.
+This plugin helps you take pictures/record videos natively with your device's camera on Android & iOS (other platforms aren't supported). It has built-in support for runtime permissions, as well.
 
 ## INSTALLATION
 
@@ -38,6 +38,10 @@ There are two ways to set up the plugin on iOS:
 - **Audio is muted on iOS after calling NativeCamera.RecordVideo**
 
 Please see: https://forum.unity.com/threads/native-camera-for-android-ios-open-source.529560/page-9#post-8207157
+
+- **Plugin doesn't work in a Windows/Mac/Linux build**
+
+Only Android & iOS platforms are supported. Editor functionality is for preview purposes only and uses Unity's [Editor-only API](https://docs.unity3d.com/ScriptReference/EditorUtility.OpenFilePanelWithFilters.html).
 
 - **Can't use the camera, it says "java.lang.ClassNotFoundException: com.yasirkula.unity.NativeCamera" in Logcat**
 
