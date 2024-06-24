@@ -46,7 +46,10 @@ public class NativeCameraPictureFragment extends Fragment
 	{
 		super.onCreate( savedInstanceState );
 		if( mediaReceiver == null )
+		{
+			Log.e( "Unity", "NativeCameraPictureFragment.mediaReceiver became null in onCreate!" );
 			onActivityResult( CAMERA_PICTURE_CODE, Activity.RESULT_CANCELED, null );
+		}
 		else
 		{
 			int defaultCamera = getArguments().getInt( DEFAULT_CAMERA_ID );
@@ -207,8 +210,11 @@ public class NativeCameraPictureFragment extends Fragment
 			}
 		}
 
+		Log.d( "Unity", "NativeCameraPictureFragment.onActivityResult: " + ( ( result == null ) ? "null" : ( ( result.exists() ? result.length() : -1 ) + " " + result.getAbsolutePath() ) ) );
 		if( mediaReceiver != null )
-			mediaReceiver.OnMediaReceived( result != null && result.length() > 1L ? result.getAbsolutePath() : "" );
+			mediaReceiver.OnMediaReceived( ( result != null && result.exists() && result.length() > 1L ) ? result.getAbsolutePath() : "" );
+		else
+			Log.e( "Unity", "NativeCameraPictureFragment.mediaReceiver became null in onActivityResult!" );
 
 		getFragmentManager().beginTransaction().remove( this ).commitAllowingStateLoss();
 	}

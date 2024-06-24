@@ -293,12 +293,18 @@ public class NativeCameraUtils
 		return false;
 	}
 
-	public static String GetPathFromURIOrCopyFile( Context context, Uri uri )
+	public static String GetPathFromURIOrCopyFile( Context context, Uri uri, String defaultPath )
 	{
 		if( uri == null )
 			return null;
 
 		String path = GetPathFromURI( context, uri );
+		if( path == null || path.length() == 0 )
+		{
+			Log.d( "Unity", "Filepath of '" + uri + "' couldn't be determined. Falling back to: " + defaultPath );
+			path = defaultPath;
+		}
+
 		if( path != null && path.length() > 0 )
 		{
 			// Check if file is accessible
@@ -312,6 +318,7 @@ public class NativeCameraUtils
 			}
 			catch( Exception e )
 			{
+				Log.e( "Unity", "Media uri isn't accessible via File API: " + uri, e );
 			}
 			finally
 			{
@@ -372,9 +379,12 @@ public class NativeCameraUtils
 		{
 			InputStream input = resolver.openInputStream( uri );
 			if( input == null )
+			{
+				Log.w( "Unity", "Couldn't open input stream: " + uri );
 				return null;
+			}
 
-			File tempFile = new File( context.getCacheDir().getAbsolutePath(), NativeCameraVideoFragment.VIDEO_NAME + extension );
+			File tempFile = new File( context.getCacheDir().getAbsolutePath(), "VID_copy" + extension );
 			OutputStream output = null;
 			try
 			{
@@ -387,6 +397,7 @@ public class NativeCameraUtils
 					output.write( buf, 0, len );
 				}
 
+				Log.d( "Unity", "Copied media from " + uri + " to: " + tempFile.getAbsolutePath() );
 				return tempFile.getAbsolutePath();
 			}
 			finally

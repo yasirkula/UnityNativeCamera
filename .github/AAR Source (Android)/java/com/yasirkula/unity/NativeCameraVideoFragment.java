@@ -53,7 +53,10 @@ public class NativeCameraVideoFragment extends Fragment
 	{
 		super.onCreate( savedInstanceState );
 		if( mediaReceiver == null )
+		{
+			Log.e( "Unity", "NativeCameraVideoFragment.mediaReceiver became null in onCreate!" );
 			onActivityResult( CAMERA_VIDEO_CODE, Activity.RESULT_CANCELED, null );
+		}
 		else
 		{
 			int defaultCamera = getArguments().getInt( DEFAULT_CAMERA_ID );
@@ -164,12 +167,12 @@ public class NativeCameraVideoFragment extends Fragment
 		{
 			if( data != null )
 			{
-				String path = NativeCameraUtils.GetPathFromURIOrCopyFile( getActivity(), data.getData() );
+				String path = NativeCameraUtils.GetPathFromURIOrCopyFile( getActivity(), data.getData(), fileTargetPath );
 				if( path != null && path.length() > 0 )
 					result = new File( path );
 			}
 
-			if( ( result == null || result.length() == 0 ) && fileTargetPath != null && fileTargetPath.length() > 0 )
+			if( ( result == null || !result.exists() || result.length() == 0 ) && fileTargetPath != null && fileTargetPath.length() > 0 )
 				result = new File( fileTargetPath );
 
 			if( lastVideoId != 0L ) // it got reset somehow?
@@ -247,8 +250,11 @@ public class NativeCameraVideoFragment extends Fragment
 			}
 		}
 
+		Log.d( "Unity", "NativeCameraVideoFragment.onActivityResult: " + ( ( result == null ) ? "null" : ( ( result.exists() ? result.length() : -1 ) + " " + result.getAbsolutePath() ) ) );
 		if( mediaReceiver != null )
-			mediaReceiver.OnMediaReceived( result != null && result.length() > 1L ? result.getAbsolutePath() : "" );
+			mediaReceiver.OnMediaReceived( ( result != null && result.exists() && result.length() > 1L ) ? result.getAbsolutePath() : "" );
+		else
+			Log.e( "Unity", "NativeCameraVideoFragment.mediaReceiver became null in onActivityResult!" );
 
 		getFragmentManager().beginTransaction().remove( this ).commitAllowingStateLoss();
 	}

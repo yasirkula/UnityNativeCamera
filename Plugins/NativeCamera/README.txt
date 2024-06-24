@@ -1,4 +1,4 @@
-= Native Camera for Android & iOS (v1.4.3) =
+= Native Camera for Android & iOS (v1.4.4) =
 
 Documentation: https://github.com/yasirkula/UnityNativeCamera
 FAQ: https://github.com/yasirkula/UnityNativeCamera#faq
