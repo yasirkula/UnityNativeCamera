@@ -11,7 +11,7 @@ namespace NativeCameraNamespace
 		public NCCameraCallbackAndroid( NativeCamera.CameraCallback callback ) : base( "com.yasirkula.unity.NativeCameraMediaReceiver" )
 		{
 			this.callback = callback;
-			callbackHelper = new GameObject( "NCCallbackHelper" ).AddComponent<NCCallbackHelper>();
+			callbackHelper = NCCallbackHelper.Create( true );
 		}
 
 		[UnityEngine.Scripting.Preserve]

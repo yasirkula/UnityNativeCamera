@@ -47,7 +47,6 @@ namespace NativeCameraNamespace
 			File.WriteAllText( SAVE_PATH, JsonUtility.ToJson( this, true ) );
 		}
 
-#if UNITY_2018_3_OR_NEWER
 		[SettingsProvider]
 		public static SettingsProvider CreatePreferencesGUI()
 		{
@@ -57,11 +56,7 @@ namespace NativeCameraNamespace
 				keywords = new System.Collections.Generic.HashSet<string>() { "Native", "Camera", "Android", "iOS" }
 			};
 		}
-#endif
 
-#if !UNITY_2018_3_OR_NEWER
-		[PreferenceItem( "Native Camera" )]
-#endif
 		public static void PreferencesGUI()
 		{
 			EditorGUI.BeginChangeCheck();
@@ -95,14 +90,9 @@ namespace NativeCameraNamespace
 				PBXProject pbxProject = new PBXProject();
 				pbxProject.ReadFromFile( pbxProjectPath );
 
-#if UNITY_2019_3_OR_NEWER
 				string targetGUID = pbxProject.GetUnityFrameworkTargetGuid();
-#else
-				string targetGUID = pbxProject.TargetGuidByName( PBXProject.GetUnityTargetName() );
-#endif
-
-				pbxProject.AddBuildProperty( targetGUID, "OTHER_LDFLAGS", "-framework MobileCoreServices" );
-				pbxProject.AddBuildProperty( targetGUID, "OTHER_LDFLAGS", "-framework ImageIO" );
+				pbxProject.AddFrameworkToProject( targetGUID, "MobileCoreServices.framework", false );
+				pbxProject.AddFrameworkToProject( targetGUID, "ImageIO.framework", false );
 
 				File.WriteAllText( pbxProjectPath, pbxProject.WriteToString() );
 

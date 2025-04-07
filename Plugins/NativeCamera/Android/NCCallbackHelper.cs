@@ -1,15 +1,28 @@
 ﻿#if UNITY_EDITOR || UNITY_ANDROID
+using System;
 using UnityEngine;
 
 namespace NativeCameraNamespace
 {
 	public class NCCallbackHelper : MonoBehaviour
 	{
-		private System.Action mainThreadAction = null;
+		private bool autoDestroyWithCallback;
+		private Action mainThreadAction = null;
 
-		private void Awake()
+		public static NCCallbackHelper Create( bool autoDestroyWithCallback )
 		{
-			DontDestroyOnLoad( gameObject );
+			NCCallbackHelper result = new GameObject( "NCCallbackHelper" ).AddComponent<NCCallbackHelper>();
+			result.autoDestroyWithCallback = autoDestroyWithCallback;
+			DontDestroyOnLoad( result.gameObject );
+			return result;
+		}
+
+		public void CallOnMainThread( Action function )
+		{
+			lock( this )
+			{
+				mainThreadAction += function;
+			}
 		}
 
 		private void Update()
@@ -18,20 +31,21 @@ namespace NativeCameraNamespace
 			{
 				try
 				{
-					System.Action temp = mainThreadAction;
-					mainThreadAction = null;
+					Action temp;
+					lock( this )
+					{
+						temp = mainThreadAction;
+						mainThreadAction = null;
+					}
+
 					temp();
 				}
 				finally
 				{
-					Destroy( gameObject );
+					if( autoDestroyWithCallback )
+						Destroy( gameObject );
 				}
 			}
-		}
-
-		public void CallOnMainThread( System.Action function )
-		{
-			mainThreadAction = function;
 		}
 	}
 }

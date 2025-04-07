@@ -4,18 +4,11 @@
 #import <AVFoundation/AVFoundation.h>
 #import <UIKit/UIKit.h>
 
-#ifdef UNITY_4_0 || UNITY_5_0
-#import "iPhone_View.h"
-#else
 extern UIViewController* UnityGetGLViewController();
-#endif
-
-#define CHECK_IOS_VERSION( version )  ([[[UIDevice currentDevice] systemVersion] compare:version options:NSNumericSearch] != NSOrderedAscending)
 
 @interface UNativeCamera:NSObject
 + (int)checkPermission;
-+ (int)requestPermission:(BOOL)asyncMode;
-+ (int)canOpenSettings;
++ (void)requestPermission;
 + (void)openSettings;
 + (int)hasCamera;
 + (void)openCamera:(BOOL)imageMode defaultCamera:(int)defaultCamera savePath:(NSString *)imageSavePath maxImageSize:(int)maxImageSize videoQuality:(int)videoQuality maxVideoDuration:(int)maxVideoDuration;
@@ -40,91 +33,37 @@ static AVAudioSessionMode unityAudioSessionMode = AVAudioSessionModeDefault;
 // Credit: https://stackoverflow.com/a/20464727/2373034
 + (int)checkPermission
 {
-	if( CHECK_IOS_VERSION( @"7.0" ) )
-	{
-		AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
-		if( status == AVAuthorizationStatusAuthorized )
-			return 1;
-		else if( status == AVAuthorizationStatusNotDetermined )
-			return 2;
-		else
-			return 0;
-	}
-	
-	return 1;
+	AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+	if( status == AVAuthorizationStatusAuthorized )
+		return 1;
+	else if( status == AVAuthorizationStatusNotDetermined )
+		return 2;
+	else
+		return 0;
 }
 
 // Credit: https://stackoverflow.com/a/20464727/2373034
-+ (int)requestPermission:(BOOL)asyncMode
++ (void)requestPermission
 {
-	int result = [self requestPermissionInternal:asyncMode];
-	if( asyncMode && result >= 0 ) // Result returned immediately, forward it
-		UnitySendMessage( "NCPermissionCallbackiOS", "OnPermissionRequested", [self getCString:[NSString stringWithFormat:@"%d", result]] );
-		
-	return result;
-}
-
-+ (int)requestPermissionInternal:(BOOL)asyncMode
-{
-	if( CHECK_IOS_VERSION( @"7.0" ) )
+	AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+	if( status == AVAuthorizationStatusAuthorized )
+		UnitySendMessage( "NCPermissionCallbackiOS", "OnPermissionRequested", "1" );
+	else if( status == AVAuthorizationStatusNotDetermined )
 	{
-		AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
-		if( status == AVAuthorizationStatusAuthorized )
-			return 1;
-		else if( status == AVAuthorizationStatusNotDetermined )
+		[AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^( BOOL granted )
 		{
-			if( asyncMode )
-			{
-				[AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^( BOOL granted )
-				{
-					UnitySendMessage( "NCPermissionCallbackiOS", "OnPermissionRequested", granted ? "1" : "0" );
-				}];
-				
-				return -1;
-			}
-			else
-			{
-				__block BOOL authorized = NO;
-				dispatch_semaphore_t sema = dispatch_semaphore_create( 0 );
-				[AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^( BOOL granted )
-				{
-					authorized = granted;
-					dispatch_semaphore_signal( sema );
-				}];
-				dispatch_semaphore_wait( sema, DISPATCH_TIME_FOREVER );
-				
-				return authorized ? 1 : 0;
-			}
-		}
-		else
-			return 0;
+			UnitySendMessage( "NCPermissionCallbackiOS", "OnPermissionRequested", granted ? "1" : "0" );
+		}];
 	}
-	
-	return 1;
+	else
+		UnitySendMessage( "NCPermissionCallbackiOS", "OnPermissionRequested", "0" );
 }
 
 // Credit: https://stackoverflow.com/a/25453667/2373034
-+ (int)canOpenSettings
-{
-	return ( &UIApplicationOpenSettingsURLString != NULL ) ? 1 : 0;
-}
-
-// Credit: https://stackoverflow.com/a/25453667/2373034
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 + (void)openSettings
 {
-	if( &UIApplicationOpenSettingsURLString != NULL )
-	{
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 100000
-		if( CHECK_IOS_VERSION( @"10.0" ) )
-			[[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString] options:@{} completionHandler:nil];
-		else
-#endif
-			[[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
-	}
+	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString] options:@{} completionHandler:nil];
 }
-#pragma clang diagnostic pop
 
 + (int)hasCamera
 {
@@ -283,7 +222,10 @@ static AVAudioSessionMode unityAudioSessionMode = AVAudioSessionModeDefault;
 	{
 		NSLog( @"UIImagePickerController finished recording video" );
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 		NSURL *mediaUrl = info[UIImagePickerControllerMediaURL] ?: info[UIImagePickerControllerReferenceURL];
+#pragma clang diagnostic pop
 		if( mediaUrl == nil )
 			path = nil;
 		else
@@ -314,16 +256,8 @@ static AVAudioSessionMode unityAudioSessionMode = AVAudioSessionModeDefault;
 {
 	if( recordingVideo )
 	{
-		BOOL audioModeSwitchResult = YES;
 		NSError *error = nil;
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 100000
-		if( CHECK_IOS_VERSION( @"10.0" ) )
-			audioModeSwitchResult = [[AVAudioSession sharedInstance] setCategory:unityAudioSessionCategory mode:unityAudioSessionMode options:unityAudioSessionCategoryOptions error:&error];
-		else
-#endif
-			audioModeSwitchResult = [[AVAudioSession sharedInstance] setCategory:unityAudioSessionCategory withOptions:unityAudioSessionCategoryOptions error:&error] && [[AVAudioSession sharedInstance] setMode:unityAudioSessionMode error:&error];
-		
-		if( !audioModeSwitchResult )
+		if( ![[AVAudioSession sharedInstance] setCategory:unityAudioSessionCategory mode:unityAudioSessionMode options:unityAudioSessionCategoryOptions error:&error] )
 		{
 			if( error != nil )
 				NSLog( @"Error setting audio session category back to %@ with mode %@ and options %lu: %@", unityAudioSessionCategory, unityAudioSessionMode, (unsigned long) unityAudioSessionCategoryOptions, error );
@@ -509,10 +443,14 @@ static AVAudioSessionMode unityAudioSessionMode = AVAudioSessionModeDefault;
 	
 	CGFloat scaleRatio = scaleX < scaleY ? scaleX : scaleY;
 	CGRect imageRect = CGRectMake( 0, 0, width * scaleRatio, height * scaleRatio );
-	UIGraphicsBeginImageContextWithOptions( imageRect.size, !hasAlpha, image.scale );
-	[image drawInRect:imageRect];
-	image = UIGraphicsGetImageFromCurrentImageContext();
-	UIGraphicsEndImageContext();
+	UIGraphicsImageRendererFormat *format = [image imageRendererFormat];
+	format.opaque = !hasAlpha;
+	format.scale = image.scale;
+	UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:imageRect.size format:format];
+	image = [renderer imageWithActions:^( UIGraphicsImageRendererContext* _Nonnull myContext )
+	{
+		[image drawInRect:imageRect];
+	}];
 	
 	return image;
 }
@@ -572,14 +510,9 @@ extern "C" int _NativeCamera_CheckPermission()
 	return [UNativeCamera checkPermission];
 }
 
-extern "C" int _NativeCamera_RequestPermission( int asyncMode )
+extern "C" void _NativeCamera_RequestPermission()
 {
-	return [UNativeCamera requestPermission:( asyncMode == 1 )];
-}
-
-extern "C" int _NativeCamera_CanOpenSettings()
-{
-	return [UNativeCamera canOpenSettings];
+	[UNativeCamera requestPermission];
 }
 
 extern "C" void _NativeCamera_OpenSettings()

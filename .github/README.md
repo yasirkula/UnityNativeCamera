@@ -49,7 +49,7 @@ If you are sure that your plugin is up-to-date, then enable **Custom Proguard Fi
 
 - **NativeCamera functions return Permission.Denied even though I've granted the permission"**
 
-Declare `WRITE_EXTERNAL_STORAGE` permission manually in your [**Plugins/Android/AndroidManifest.xml** file](https://answers.unity.com/questions/982710/where-is-the-manifest-file-in-unity.html) with the `tools:node="replace"` attribute as follows: `<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="replace"/>` (you'll need to add the `xmlns:tools="http://schemas.android.com/tools"` attribute to the `<manifest ...>` element).
+Declare `WRITE_EXTERNAL_STORAGE` permission manually in your **Plugins/Android/AndroidManifest.xml** with the `tools:node="replace"` attribute as follows: `<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="replace"/>`.
 
 ## HOW TO
 
@@ -70,30 +70,26 @@ Declare `WRITE_EXTERNAL_STORAGE` permission manually in your [**Plugins/Android/
 
 `NativeCamera.IsCameraBusy()`: returns true if the camera is currently open. In that case, another TakePicture or RecordVideo request will simply be ignored.
 
-Note that TakePicture and RecordVideo functions return a *NativeCamera.Permission* value. More details available below.
+Note that TakePicture and RecordVideo functions automatically call *NativeCamera.RequestPermissionAsync*. More details available below.
 
 ### B. Runtime Permissions
 
 Beginning with *6.0 Marshmallow*, Android apps must request runtime permissions before accessing certain services, similar to iOS. There are two functions to handle permissions with this plugin:
 
-`NativeCamera.Permission NativeCamera.CheckPermission( bool isPicturePermission )`: checks whether the app has access to camera or not.
+`bool NativeCamera.CheckPermission( bool isPicturePermission )`: checks whether the app has access to camera or not.
 - **isPicturePermission** determines whether we're checking permission to take a picture or record a video. Has no effect on iOS
+
+`void NativeCamera.RequestPermissionAsync( PermissionCallback callback, bool isPicturePermission )`: requests permission to access the camera from the user and returns the result asynchronously. It is recommended to show a brief explanation before asking the permission so that user understands why the permission is needed and doesn't click Deny or worse, "Don't ask again". Note that TakePicture and RecordVideo functions call RequestPermissionAsync internally and execute only if the permission is granted.
+- **PermissionCallback** takes `NativeCamera.Permission permission` parameter
 
 **NativeCamera.Permission** is an enum that can take 3 values: 
 - **Granted**: we have the permission to access the camera
-- **ShouldAsk**: we don't have permission yet, but we can ask the user for permission via *RequestPermission* function (see below). On Android, as long as the user doesn't select "Don't ask again" while denying the permission, ShouldAsk is returned
+- **ShouldAsk**: permission is denied but we can ask the user for permission once again. On Android, as long as the user doesn't select "Don't ask again" while denying the permission, ShouldAsk is returned
 - **Denied**: we don't have permission and we can't ask the user for permission. In this case, user has to give the permission from Settings. This happens when user denies the permission on iOS (can't request permission again on iOS), when user selects "Don't ask again" while denying the permission on Android or when user is not allowed to give that permission (parental controls etc.)
 
-`NativeCamera.Permission NativeCamera.RequestPermission( bool isPicturePermission )`: requests permission to access the camera from the user and returns the result. It is recommended to show a brief explanation before asking the permission so that user understands why the permission is needed and doesn't click Deny or worse, "Don't ask again". Note that TakePicture and RecordVideo functions call RequestPermission internally and execute only if the permission is granted (the result of RequestPermission is then returned).
-
-`void NativeCamera.RequestPermissionAsync( PermissionCallback callback, bool isPicturePermission )`: Asynchronous variant of *RequestPermission*. Unlike RequestPermission, this function doesn't freeze the app unnecessarily before the permission dialog is displayed. So it's recommended to call this function instead.
-- **PermissionCallback** takes `NativeCamera.Permission permission` parameter
-
-`Task<NativeCamera.Permission> NativeCamera.RequestPermissionAsync( bool isPicturePermission )`: Another asynchronous variant of *RequestPermission* (requires Unity 2018.4 or later).
+`Task<NativeCamera.Permission> NativeCamera.RequestPermissionAsync( bool isPicturePermission )`: Task-based overload of *RequestPermissionAsync*.
 
 `NativeCamera.OpenSettings()`: opens the settings for this app, from where the user can manually grant permission in case current permission state is *Permission.Denied* (Android requires *Storage* and, if declared in AndroidManifest, *Camera* permissions; iOS requires *Camera* permission).
-
-`bool NativeCamera.CanOpenSettings()`: on iOS versions prior to 8.0, opening settings from within the app is not possible and in this case, this function returns *false*. Otherwise, it returns *true*.
 
 ### C. Utility Functions
 
@@ -107,14 +103,14 @@ Beginning with *6.0 Marshmallow*, Android apps must request runtime permissions 
 - **generateMipmaps** determines whether texture should have mipmaps or not
 - **linearColorSpace** determines whether texture should be in linear color space or sRGB color space
 
-`async Task<Texture2D> NativeCamera.LoadImageAtPathAsync( string imagePath, int maxSize = -1, bool markTextureNonReadable = true )`: asynchronous variant of *LoadImageAtPath* (requires Unity 2018.4 or later). Whether or not the returned Texture2D has mipmaps enabled depends on *UnityWebRequestTexture*'s implementation on the target Unity version. Note that it isn't possible to load multiple images simultaneously using this function.
+`async Task<Texture2D> NativeCamera.LoadImageAtPathAsync( string imagePath, int maxSize = -1, bool markTextureNonReadable = true )`: asynchronous variant of *LoadImageAtPath*. Whether or not the returned Texture2D has mipmaps enabled depends on *UnityWebRequestTexture*'s implementation on the target Unity version. Note that it isn't possible to load multiple images simultaneously using this function.
 
 `Texture2D NativeCamera.GetVideoThumbnail( string videoPath, int maxSize = -1, double captureTimeInSeconds = -1.0, bool markTextureNonReadable = true, bool generateMipmaps = true, bool linearColorSpace = false )`: creates a Texture2D thumbnail from a video file and returns it. Returns *null*, if something goes wrong.
 - **maxSize** determines the maximum size of the returned Texture2D in pixels. Larger thumbnails will be down-scaled. If untouched, its value will be set to *SystemInfo.maxTextureSize*. It is recommended to set a proper maxSize for better performance
 - **captureTimeInSeconds** determines the frame of the video that the thumbnail is captured from. If untouched, OS will decide this value
 - **markTextureNonReadable** (see *LoadImageAtPath*)
 
-`async Task<Texture2D> NativeCamera.GetVideoThumbnailAsync( string videoPath, int maxSize = -1, double captureTimeInSeconds = -1.0, bool markTextureNonReadable = true )`: asynchronous variant of *GetVideoThumbnail* (requires Unity 2018.4 or later). Whether or not the returned Texture2D has mipmaps enabled depends on *UnityWebRequestTexture*'s implementation on the target Unity version. Note that it isn't possible to generate multiple video thumbnails simultaneously using this function.
+`async Task<Texture2D> NativeCamera.GetVideoThumbnailAsync( string videoPath, int maxSize = -1, double captureTimeInSeconds = -1.0, bool markTextureNonReadable = true )`: asynchronous variant of *GetVideoThumbnail*. Whether or not the returned Texture2D has mipmaps enabled depends on *UnityWebRequestTexture*'s implementation on the target Unity version. Note that it isn't possible to generate multiple video thumbnails simultaneously using this function.
 
 ## EXAMPLE CODE
 
@@ -146,17 +142,9 @@ void Update()
 	}
 }
 
-// Example code doesn't use this function but it is here for reference. It's recommended to ask for permissions manually using the
-// RequestPermissionAsync methods prior to calling NativeCamera functions
-private async void RequestPermissionAsynchronously( bool isPicturePermission )
-{
-	NativeCamera.Permission permission = await NativeCamera.RequestPermissionAsync( isPicturePermission );
-	Debug.Log( "Permission result: " + permission );
-}
-
 private void TakePicture( int maxSize )
 {
-	NativeCamera.Permission permission = NativeCamera.TakePicture( ( path ) =>
+	NativeCamera.TakePicture( ( path ) =>
 	{
 		Debug.Log( "Image path: " + path );
 		if( path != null )
@@ -188,13 +176,11 @@ private void TakePicture( int maxSize )
 			Destroy( texture, 5f );
 		}
 	}, maxSize );
-
-	Debug.Log( "Permission result: " + permission );
 }
 
 private void RecordVideo()
 {
-	NativeCamera.Permission permission = NativeCamera.RecordVideo( ( path ) =>
+	NativeCamera.RecordVideo( ( path ) =>
 	{
 		Debug.Log( "Video path: " + path );
 		if( path != null )
@@ -203,7 +189,5 @@ private void RecordVideo()
 			Handheld.PlayFullScreenMovie( "file://" + path );
 		}
 	} );
-
-	Debug.Log( "Permission result: " + permission );
 }
 ```

@@ -2,11 +2,8 @@
 using System.Globalization;
 using System.IO;
 using UnityEngine;
-#if UNITY_2018_4_OR_NEWER && !NATIVE_CAMERA_DISABLE_ASYNC_FUNCTIONS
 using System.Threading.Tasks;
-using Unity.Collections;
 using UnityEngine.Networking;
-#endif
 #if UNITY_ANDROID || UNITY_IOS
 using NativeCameraNamespace;
 #endif
@@ -91,10 +88,7 @@ public static class NativeCamera
 	private static extern int _NativeCamera_CheckPermission();
 
 	[System.Runtime.InteropServices.DllImport( "__Internal" )]
-	private static extern int _NativeCamera_RequestPermission( int asyncMode );
-
-	[System.Runtime.InteropServices.DllImport( "__Internal" )]
-	private static extern int _NativeCamera_CanOpenSettings();
+	private static extern void _NativeCamera_RequestPermission();
 
 	[System.Runtime.InteropServices.DllImport( "__Internal" )]
 	private static extern void _NativeCamera_OpenSettings();
@@ -157,82 +151,35 @@ public static class NativeCamera
 	#endregion
 
 	#region Runtime Permissions
-	public static Permission CheckPermission( bool isPicturePermission )
+	public static bool CheckPermission( bool isPicturePermission )
 	{
 #if !UNITY_EDITOR && UNITY_ANDROID
-		Permission result = (Permission) AJC.CallStatic<int>( "CheckPermission", Context, isPicturePermission );
-		if( result == Permission.Denied && (Permission) PlayerPrefs.GetInt( "NativeCameraPermission", (int) Permission.ShouldAsk ) == Permission.ShouldAsk )
-			result = Permission.ShouldAsk;
-
-		return result;
+		return AJC.CallStatic<int>( "CheckPermission", Context, isPicturePermission ) == 1;
 #elif !UNITY_EDITOR && UNITY_IOS
-		return (Permission) _NativeCamera_CheckPermission();
+		return _NativeCamera_CheckPermission() == 1;
 #else
-		return Permission.Granted;
-#endif
-	}
-
-	public static Permission RequestPermission( bool isPicturePermission )
-	{
-		// Don't block the main thread if the permission is already granted
-		if( CheckPermission( isPicturePermission ) == Permission.Granted )
-			return Permission.Granted;
-
-#if !UNITY_EDITOR && UNITY_ANDROID
-		object threadLock = new object();
-		lock( threadLock )
-		{
-			NCPermissionCallbackAndroid nativeCallback = new NCPermissionCallbackAndroid( threadLock );
-
-			AJC.CallStatic( "RequestPermission", Context, nativeCallback, isPicturePermission, (int) Permission.ShouldAsk );
-
-			if( nativeCallback.Result == -1 )
-				System.Threading.Monitor.Wait( threadLock );
-
-			if( (Permission) nativeCallback.Result != Permission.ShouldAsk && PlayerPrefs.GetInt( "NativeCameraPermission", -1 ) != nativeCallback.Result )
-			{
-				PlayerPrefs.SetInt( "NativeCameraPermission", nativeCallback.Result );
-				PlayerPrefs.Save();
-			}
-
-			return (Permission) nativeCallback.Result;
-		}
-#elif !UNITY_EDITOR && UNITY_IOS
-		return (Permission) _NativeCamera_RequestPermission( 0 );
-#else
-		return Permission.Granted;
+		return true;
 #endif
 	}
 
 	public static void RequestPermissionAsync( PermissionCallback callback, bool isPicturePermission )
 	{
 #if !UNITY_EDITOR && UNITY_ANDROID
-		NCPermissionCallbackAsyncAndroid nativeCallback = new NCPermissionCallbackAsyncAndroid( callback );
-		AJC.CallStatic( "RequestPermission", Context, nativeCallback, isPicturePermission, (int) Permission.ShouldAsk );
+		NCPermissionCallbackAndroid nativeCallback = new( callback );
+		AJC.CallStatic( "RequestPermission", Context, nativeCallback, isPicturePermission );
 #elif !UNITY_EDITOR && UNITY_IOS
 		NCPermissionCallbackiOS.Initialize( callback );
-		_NativeCamera_RequestPermission( 1 );
+		_NativeCamera_RequestPermission();
 #else
 		callback( Permission.Granted );
 #endif
 	}
 
-#if UNITY_2018_4_OR_NEWER && !NATIVE_CAMERA_DISABLE_ASYNC_FUNCTIONS
 	public static Task<Permission> RequestPermissionAsync( bool isPicturePermission )
 	{
 		TaskCompletionSource<Permission> tcs = new TaskCompletionSource<Permission>();
 		RequestPermissionAsync( ( permission ) => tcs.SetResult( permission ), isPicturePermission );
 		return tcs.Task;
-	}
-#endif
-
-	public static bool CanOpenSettings()
-	{
-#if !UNITY_EDITOR && UNITY_IOS
-		return _NativeCamera_CanOpenSettings() == 1;
-#else
-		return true;
-#endif
 	}
 
 	public static void OpenSettings()
@@ -246,11 +193,16 @@ public static class NativeCamera
 	#endregion
 
 	#region Camera Functions
-	public static Permission TakePicture( CameraCallback callback, int maxSize = -1, bool saveAsJPEG = true, PreferredCamera preferredCamera = PreferredCamera.Default )
+	public static void TakePicture( CameraCallback callback, int maxSize = -1, bool saveAsJPEG = true, PreferredCamera preferredCamera = PreferredCamera.Default )
 	{
-		Permission result = RequestPermission( true );
-		if( result == Permission.Granted && !IsCameraBusy() )
+		RequestPermissionAsync( ( permission ) =>
 		{
+			if( permission != Permission.Granted || IsCameraBusy() )
+			{
+				callback?.Invoke( null );
+				return;
+			}
+
 #if UNITY_EDITOR
 			string pickedFile = UnityEditor.EditorUtility.OpenFilePanelWithFilters( "Select image", "", new string[] { "Image files", "png,jpg,jpeg", "All files", "*" } );
 
@@ -268,16 +220,19 @@ public static class NativeCamera
 			if( callback != null )
 				callback( null );
 #endif
-		}
-
-		return result;
+		}, true );
 	}
 
-	public static Permission RecordVideo( CameraCallback callback, Quality quality = Quality.Default, int maxDuration = 0, long maxSizeBytes = 0L, PreferredCamera preferredCamera = PreferredCamera.Default )
+	public static void RecordVideo( CameraCallback callback, Quality quality = Quality.Default, int maxDuration = 0, long maxSizeBytes = 0L, PreferredCamera preferredCamera = PreferredCamera.Default )
 	{
-		Permission result = RequestPermission( false );
-		if( result == Permission.Granted && !IsCameraBusy() )
+		RequestPermissionAsync( ( permission ) =>
 		{
+			if( permission != Permission.Granted || IsCameraBusy() )
+			{
+				callback?.Invoke( null );
+				return;
+			}
+
 #if UNITY_EDITOR
 			string pickedFile = UnityEditor.EditorUtility.OpenFilePanelWithFilters( "Select video", "", new string[] { "Video files", "mp4,mov,webm,avi", "All files", "*" } );
 
@@ -292,9 +247,7 @@ public static class NativeCamera
 			if( callback != null )
 				callback( null );
 #endif
-		}
-
-		return result;
+		}, false );
 	}
 
 	public static bool DeviceHasCamera()
@@ -375,7 +328,6 @@ public static class NativeCamera
 		return result;
 	}
 
-#if UNITY_2018_4_OR_NEWER && !NATIVE_CAMERA_DISABLE_ASYNC_FUNCTIONS
 	public static async Task<Texture2D> LoadImageAtPathAsync( string imagePath, int maxSize = -1, bool markTextureNonReadable = true )
 	{
 		if( string.IsNullOrEmpty( imagePath ) )
@@ -405,14 +357,8 @@ public static class NativeCamera
 			while( !asyncOperation.isDone )
 				await Task.Yield();
 
-#if UNITY_2020_1_OR_NEWER
 			if( www.result != UnityWebRequest.Result.Success )
-#else
-			if( www.isNetworkError || www.isHttpError )
-#endif
-			{
 				Debug.LogWarning( "Couldn't use UnityWebRequest to load image, falling back to LoadImage: " + www.error );
-			}
 			else
 				result = DownloadHandlerTexture.GetContent( www );
 		}
@@ -456,7 +402,6 @@ public static class NativeCamera
 
 		return result;
 	}
-#endif
 
 	public static Texture2D GetVideoThumbnail( string videoPath, int maxSize = -1, double captureTimeInSeconds = -1.0, bool markTextureNonReadable = true, bool generateMipmaps = true, bool linearColorSpace = false )
 	{
@@ -477,7 +422,6 @@ public static class NativeCamera
 			return null;
 	}
 
-#if UNITY_2018_4_OR_NEWER && !NATIVE_CAMERA_DISABLE_ASYNC_FUNCTIONS
 	public static async Task<Texture2D> GetVideoThumbnailAsync( string videoPath, int maxSize = -1, double captureTimeInSeconds = -1.0, bool markTextureNonReadable = true )
 	{
 		if( maxSize <= 0 )
@@ -499,6 +443,7 @@ public static class NativeCamera
 			return null;
 	}
 
+#if UNITY_ANDROID
 	private static async Task<T> TryCallNativeAndroidFunctionOnSeparateThread<T>( Func<T> function )
 	{
 		T result = default( T );
@@ -614,5 +559,5 @@ public static class NativeCamera
 
 		return new VideoProperties( width, height, duration, rotation );
 	}
-	#endregion
+#endregion
 }
