@@ -59,7 +59,7 @@ Declare `WRITE_EXTERNAL_STORAGE` permission manually in your **Plugins/Android/A
 - This operation is **asynchronous**! After user takes a picture or cancels the operation, the **callback** is called (on main thread). **CameraCallback** takes a *string* parameter which stores the path of the captured image, or *null* if the operation is canceled
 - **maxSize** determines the maximum size of the returned image in pixels on iOS. A larger image will be down-scaled for better performance. If untouched, its value will be set to *SystemInfo.maxTextureSize*. Has no effect on Android
 - **saveAsJPEG** determines whether the image is saved as JPEG or PNG. Has no effect on Android
-- **preferredCamera** determines whether the rear camera or the front camera should be opened by default
+- **preferredCamera** determines whether the rear camera or the front camera should be opened by default. Please note that the functionality of this parameter depends on whether the device vendor has added this capability to the camera or not. So, this parameter may not have any effect on some devices (see https://github.com/yasirkula/UnityNativeCamera/issues/126)
 
 `NativeCamera.RecordVideo( CameraCallback callback, Quality quality = Quality.Default, int maxDuration = 0, long maxSizeBytes = 0L, PreferredCamera preferredCamera = PreferredCamera.Default )`: opens the camera and waits for user to record a video.
 - **quality** determines the quality of the recorded video. Available values are: *Default*, *Low*, *Medium*, *High*
