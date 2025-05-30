@@ -17,8 +17,8 @@ There are 5 ways to install this plugin:
 - import [NativeCamera.unitypackage](https://github.com/yasirkula/UnityNativeCamera/releases) via *Assets-Import Package*
 - clone/[download](https://github.com/yasirkula/UnityNativeCamera/archive/master.zip) this repository and move the *Plugins* folder to your Unity project's *Assets* folder
 - import it from [Asset Store](https://assetstore.unity.com/packages/tools/integration/native-camera-for-android-ios-117802)
-- *(via Package Manager)* add the following line to *Packages/manifest.json*:
-  - `"com.yasirkula.nativecamera": "https://github.com/yasirkula/UnityNativeCamera.git",`
+- *(via Package Manager)* click the + button and install the package from the following git URL:
+  - `https://github.com/yasirkula/UnityNativeCamera.git`
 - *(via [OpenUPM](https://openupm.com))* after installing [openupm-cli](https://github.com/openupm/openupm-cli), run the following command:
   - `openupm add com.yasirkula.nativecamera`
 
