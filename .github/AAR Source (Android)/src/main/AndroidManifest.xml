@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <application>
+        <provider
+            android:name="com.yasirkula.unity.NativeCameraContentProvider"
+            android:authorities="${applicationId}.NativeCameraContentProvider"
+            android:exported="false"
+            android:grantUriPermissions="true" />
+    </application>
+
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="replace" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="replace" />
+</manifest>

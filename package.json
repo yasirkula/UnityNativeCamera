@@ -1,7 +1,12 @@
 {
   "name": "com.yasirkula.nativecamera",
   "displayName": "Native Camera",
-  "version": "1.5.0",
+  "version": "1.5.1",
+  "author": {
+    "name": "yasirkula",
+    "email": "yasirkula@gmail.com",
+    "url": "https://github.com/yasirkula"
+  },
   "documentationUrl": "https://github.com/yasirkula/UnityNativeCamera",
   "changelogUrl": "https://github.com/yasirkula/UnityNativeCamera/releases",
   "licensesUrl": "https://github.com/yasirkula/UnityNativeCamera/blob/master/LICENSE.txt",

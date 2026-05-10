@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -102,7 +101,7 @@ public class NativeCameraVideoFragment extends Fragment
 			// that run on Android 9 or earlier, don't use EXTRA_OUTPUT on those devices for maximum compatibility
 			// with older devices. Use EXTRA_OUTPUT on only Android 10 which restricts our access to the Gallery,
 			// otherwise we can't delete the copies of the captured video on those devices
-			if( provideExtraOutputOnAndroidQ && android.os.Build.VERSION.SDK_INT >= 29 && !Environment.isExternalStorageLegacy() )
+			if( provideExtraOutputOnAndroidQ && Build.VERSION.SDK_INT >= 29 && !Environment.isExternalStorageLegacy() )
 			{
 				File videoFile = new File( getActivity().getCacheDir(), VIDEO_NAME + ".mp4" );
 				try
